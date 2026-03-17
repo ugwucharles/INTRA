@@ -47,6 +47,14 @@ export class ConversationsController {
     return this.conversationsService.closeConversation(currentUser, id);
   }
 
+  @Patch(':id/resolve')
+  async resolveConversation(
+    @CurrentUser() currentUser: JwtPayload,
+    @Param('id') id: string,
+  ) {
+    return this.conversationsService.resolveConversation(currentUser, id);
+  }
+
   @Patch(':id/star')
   async setStarred(
     @CurrentUser() currentUser: JwtPayload,

@@ -19,23 +19,22 @@ export function Switch({
 
   const sizes = {
     sm: {
-      track: 'h-5 w-9', // 36px wide, 20px tall
-      thumb: 'h-4 w-4', // 16px
+      track: 'h-5 w-9',
+      thumb: 'h-4 w-4',
+      onPosition: 'calc(100% - 18px)',
       offPosition: '2px',
-      onPosition: '18px', // 36px track - 16px thumb - 2px right padding = 18px
     },
     md: {
-      track: 'h-6 w-11', // 44px wide, 24px tall  
-      thumb: 'h-5 w-5', // 20px
+      track: 'h-7 w-12',
+      thumb: 'h-6 w-6',
+      onPosition: 'calc(100% - 26px)',
       offPosition: '2px',
-      onPosition: '20px', // Adjusted to ensure full visibility with proper padding
     },
   }[size];
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (disabled) return;
-    setIsPressed(true);
-    setTimeout(() => setIsPressed(false), 150);
     onCheckedChange(!checked);
   };
 
@@ -51,32 +50,39 @@ export function Switch({
       onMouseLeave={() => setIsPressed(false)}
       className={`
         relative inline-flex items-center rounded-full
-        transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500/50
-        ${checked 
-          ? 'bg-blue-500 shadow-lg shadow-blue-500/30' 
-          : 'bg-gray-300/80 dark:bg-gray-600/50'
+        transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500/40
+        ${checked
+          ? 'bg-orange-500 shadow-[0_0_15px_-3px_rgba(255,190,46,0.4)]'
+          : 'bg-gray-200/80'
         }
         ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
         ${isPressed ? 'scale-95' : 'scale-100'}
         ${sizes.track}
         ${className}
       `}
-      style={{
-        transition: 'background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-      }}
     >
+      {/* Track Background Glow (Inside) */}
+      <span
+        className={`absolute inset-0 rounded-full transition-opacity duration-500 ${checked ? 'opacity-100' : 'opacity-0'}`}
+        style={{
+          background: 'radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, transparent 70%)'
+        }}
+      />
+
+      {/* Thumb */}
       <span
         className={`
           absolute rounded-full bg-white
-          shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+          shadow-[0_2px_4px_rgba(0,0,0,0.1),0_0_1px_rgba(0,0,0,0.1)]
+          transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
           ${sizes.thumb}
         `}
         style={{
           top: '50%',
           left: checked ? sizes.onPosition : sizes.offPosition,
-          transform: `translateY(-50%) ${isPressed ? 'scale(0.95)' : 'scale(1)'}`,
-          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: `translateY(-50%) ${isPressed ? 'scaleX(1.15) scaleY(0.9)' : 'scale(1)'}`,
+          transformOrigin: checked ? 'right' : 'left',
           willChange: 'left, transform',
         }}
       />

@@ -7,7 +7,7 @@ import type { JwtPayload } from './jwt.strategy';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register-admin')
   async registerAdmin(@Body() dto: RegisterAdminDto) {
@@ -34,5 +34,14 @@ export class AuthController {
     @Body() body: { isOnline: boolean },
   ) {
     return this.authService.updateStatus(user, body.isOnline);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: { name?: string; email?: string; password?: string; profilePicture?: string },
+  ) {
+    return this.authService.updateProfile(user, dto);
   }
 }

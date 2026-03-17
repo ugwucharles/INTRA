@@ -165,7 +165,7 @@ export default function BusinessAvailabilityPage() {
                 ios-appear ios-stagger-1
                 ${
                   preset === 'ALWAYS_OPEN'
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
+                    ? 'border-orange-500 bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 scale-[1.02]'
                     : 'border-gray-200/80 bg-white/50 backdrop-blur-sm hover:border-gray-300 hover:shadow-md active:scale-[0.98]'
                 }
               `}
@@ -190,7 +190,7 @@ export default function BusinessAvailabilityPage() {
                 ios-appear ios-stagger-2
                 ${
                   preset === 'WEEKDAYS'
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
+                    ? 'border-orange-500 bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 scale-[1.02]'
                     : 'border-gray-200/80 bg-white/50 backdrop-blur-sm hover:border-gray-300 hover:shadow-md active:scale-[0.98]'
                 }
               `}
@@ -215,7 +215,7 @@ export default function BusinessAvailabilityPage() {
                 ios-appear ios-stagger-3
                 ${
                   preset === 'CUSTOM'
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
+                    ? 'border-orange-500 bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 scale-[1.02]'
                     : 'border-gray-200/80 bg-white/50 backdrop-blur-sm hover:border-gray-300 hover:shadow-md active:scale-[0.98]'
                 }
               `}

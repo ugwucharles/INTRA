@@ -13,6 +13,8 @@ import { DepartmentsModule } from './departments/departments.module';
 import { RoutingModule } from './routing/routing.module';
 import { TagsModule } from './tags/tags.module';
 import { SavedRepliesModule } from './saved-replies/saved-replies.module';
+import { EmailModule } from './email/email.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { SavedRepliesModule } from './saved-replies/saved-replies.module';
     RoutingModule,
     TagsModule,
     SavedRepliesModule,
+    EmailModule,
+    SocketModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

@@ -11,7 +11,7 @@ import type { JwtPayload } from '../auth/jwt.strategy';
 
 @Controller('staff')
 export class StaffController {
-  constructor(private readonly staffService: StaffService) {}
+  constructor(private readonly staffService: StaffService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -25,7 +25,7 @@ export class StaffController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.AGENT)
   async listStaff(@CurrentUser() currentUser: JwtPayload) {
     return this.staffService.listStaff(currentUser);
   }

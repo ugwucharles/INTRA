@@ -1,13 +1,24 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { AssignConversationDto } from './dto/assign-conversation.dto';
 import { JwtPayload } from '../auth/jwt.strategy';
-import { UserRole, ConversationStatus } from '@prisma/client';
+import { UserRole, ConversationStatus, $Enums } from '@prisma/client';
+import { MetaService } from '../meta/meta.service';
+import { EmailService } from '../email/email.service';
+
+const RATING_PROMPT =
+  'How would you rate your experience today? Please reply with a number from 1 to 10.';
 
 @Injectable()
 export class ConversationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ConversationsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly metaService: MetaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async createConversation(currentUser: JwtPayload, dto: CreateConversationDto) {
     const { customerId } = dto;
@@ -38,7 +49,7 @@ export class ConversationsService {
       // Admin sees all org conversations
       return this.prisma.conversation.findMany({
         where: { orgId: currentUser.orgId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { updatedAt: 'desc' },
       });
     }
 
@@ -48,7 +59,7 @@ export class ConversationsService {
         orgId: currentUser.orgId,
         assignedTo: currentUser.userId,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
     });
   }
 
@@ -137,6 +148,94 @@ export class ConversationsService {
     return closed;
   }
 
+  async resolveConversation(currentUser: JwtPayload, conversationId: string) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: { id: conversationId, orgId: currentUser.orgId },
+      include: { customer: true },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found in this organization');
+    }
+
+    if (
+      conversation.status === ConversationStatus.RESOLVED ||
+      conversation.status === ConversationStatus.CLOSED
+    ) {
+      throw new BadRequestException('Conversation is already resolved or closed');
+    }
+
+    if (
+      currentUser.role === 'AGENT' &&
+      conversation.assignedTo !== currentUser.userId
+    ) {
+      throw new ForbiddenException('You are not assigned to this conversation');
+    }
+
+    const resolved = await this.prisma.conversation.update({
+      where: { id: conversation.id },
+      data: {
+        status: ConversationStatus.RESOLVED,
+        awaitingRating: true,
+        resolvedBy: currentUser.userId,
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        orgId: currentUser.orgId,
+        userId: currentUser.userId,
+        action: 'CONVERSATION_RESOLVED',
+        targetId: resolved.id,
+        targetType: 'conversation',
+      },
+    });
+
+    // Send the rating prompt to the customer on their channel
+    try {
+      const customer = conversation.customer;
+      if (customer?.source) {
+        if (
+          (
+            [
+              $Enums.Channel.FACEBOOK_MESSENGER,
+              $Enums.Channel.INSTAGRAM,
+              $Enums.Channel.WHATSAPP,
+            ] as string[]
+          ).includes(customer.source)
+        ) {
+          await this.metaService.sendOutboundTextMessage(
+            currentUser.orgId,
+            conversation.id,
+            customer,
+            RATING_PROMPT,
+          );
+        } else if (customer.source === $Enums.Channel.EMAIL && customer.email) {
+          // Create a placeholder message record for idempotency then send via SMTP
+          const msg = await this.prisma.message.create({
+            data: {
+              conversationId: conversation.id,
+              senderType: 'STAFF',
+              senderId: currentUser.userId,
+              content: RATING_PROMPT,
+            },
+          });
+          await this.emailService.sendReply(
+            currentUser.orgId,
+            conversation.id,
+            customer.email,
+            RATING_PROMPT,
+            msg.id,
+          );
+        }
+      }
+    } catch (err) {
+      this.logger.error('Failed to send rating prompt', err as Error);
+    }
+
+    return resolved;
+  }
+
   async setStarred(
     currentUser: JwtPayload,
     conversationId: string,
@@ -183,6 +282,13 @@ export class ConversationsService {
 
     if (!conversation) {
       throw new NotFoundException('Conversation not found in this organization');
+    }
+
+    if (
+      conversation.status === ConversationStatus.CLOSED ||
+      conversation.status === ConversationStatus.RESOLVED
+    ) {
+      throw new BadRequestException('Cannot change status of a closed or resolved conversation');
     }
 
     if (

@@ -5,117 +5,104 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-model Organization {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  createdAt DateTime @default(now())
 
-  users             User[]
-  customers         Customer[]
-  conversations     Conversation[]
+model Organization {
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String
+  createdAt         DateTime           @default(now())
   auditLogs         AuditLog[]
+  autoReplies       AutoReply[]
+  conversations     Conversation[]
+  conversationNotes ConversationNote[]
+  customers         Customer[]
+  customerNotes     CustomerNote[]
   departments       Department[]
   routingSettings   RoutingSettings?
-  autoReplies       AutoReply[]
-  customerNotes     CustomerNote[]
-  tags              Tag[]
-  conversationNotes ConversationNote[]
   savedReplies      SavedReply[]
+  tags              Tag[]
+  users             User[]
 }
 
 model Department {
-  id        String   @id @default(cuid())
-  orgId     String   @db.Uuid
-  name      String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  org           Organization @relation(fields: [orgId], references: [id])
-  users         User[]
-  conversations Conversation[]
+  id            String         @id @default(cuid())
+  orgId         String         @db.Uuid
+  name          String
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   autoReplies   AutoReply[]
+  conversations Conversation[]
+  org           Organization   @relation(fields: [orgId], references: [id])
   savedReplies  SavedReply[]
+  users         User[]         @relation("DepartmentToUser")
 }
 
 model User {
-  id        String    @id @default(uuid()) @db.Uuid
-  orgId     String    @db.Uuid
-  name      String
-  email     String
-  password  String
-  role      UserRole  @default(AGENT)
-  isActive  Boolean   @default(true)
-  isOnline  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-
-  org                   Organization   @relation(fields: [orgId], references: [id])
+  id                    String             @id @default(uuid()) @db.Uuid
+  orgId                 String             @db.Uuid
+  name                  String
+  email                 String
+  password              String
+  role                  UserRole           @default(AGENT)
+  isActive              Boolean            @default(true)
+  createdAt             DateTime           @default(now())
+  isOnline              Boolean            @default(true)
+  level                 String?
+  profilePicture        String?
+  title                 String?
+  ratingTotal           Float              @default(0)
+  ratingCount           Int                @default(0)
   assignedConversations Conversation[]
-  departments           Department[]
-  customerNotes         CustomerNote[]
   conversationNotes     ConversationNote[]
+  customerNotes         CustomerNote[]
+  org                   Organization       @relation(fields: [orgId], references: [id])
+  departments           Department[]       @relation("DepartmentToUser")
 
   @@unique([orgId, email])
 }
 
-enum UserRole {
-  ADMIN
-  AGENT
-}
-
 model Customer {
-  id        String   @id @default(cuid())
-  orgId     String   @db.Uuid
-  name      String?
-  email     String?
-  phone     String?
-  // Optional: external identifier from third-party channels (e.g. Facebook PSID, Instagram user id)
-  externalId String?
-  // Optional: source channel for this customer (e.g. FACEBOOK_MESSENGER, INSTAGRAM)
-  source     Channel?
-  // Optional: page/account id for channels like Facebook Pages or Instagram accounts
-  pageId     String?
-  // Whether this customer has been explicitly saved as a contact in the CRM
-  isSaved   Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  org           Organization  @relation(fields: [orgId], references: [id])
+  id            String         @id @default(cuid())
+  orgId         String         @db.Uuid
+  name          String?
+  email         String?
+  phone         String?
+  createdAt     DateTime       @default(now())
+  externalId    String?
+  source        Channel?
+  pageId        String?
+  isSaved       Boolean        @default(false)
   conversations Conversation[]
-  notes          CustomerNote[]
-  tags           CustomerTag[]
+  org           Organization   @relation(fields: [orgId], references: [id])
+  notes         CustomerNote[]
+  tags          CustomerTag[]
 
   @@unique([orgId, source, externalId])
 }
 
 model Conversation {
-  id          String              @id @default(cuid())
-  orgId       String              @db.Uuid
-  customerId  String
-  assignedTo  String?             @db.Uuid
-  status      ConversationStatus  @default(OPEN)
-  isStarred   Boolean             @default(false)
-  unreadCount Int                 @default(0)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-
-  // Routing metadata
+  id                  String             @id @default(cuid())
+  orgId               String             @db.Uuid
+  customerId          String
+  assignedTo          String?            @db.Uuid
+  status              ConversationStatus @default(OPEN)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  unreadCount         Int                @default(0)
   departmentId        String?
-  routingQuestionSent Boolean  @default(false)
+  routingQuestionSent Boolean            @default(false)
   routingMetadata     Json?
-
-  org        Organization @relation(fields: [orgId], references: [id])
-  customer   Customer     @relation(fields: [customerId], references: [id])
-  assignee   User?        @relation(fields: [assignedTo], references: [id])
-  department Department?  @relation(fields: [departmentId], references: [id])
-  messages   Message[]
-  tags       ConversationTag[]
-  notes      ConversationNote[]
-}
-
-enum ConversationStatus {
-  OPEN
-  CLOSED
-  PENDING
+  isStarred           Boolean            @default(false)
+  awaitingRating      Boolean            @default(false)
+  resolvedBy          String?            @db.Uuid
+  customerRating      Int?
+  assignee            User?              @relation(fields: [assignedTo], references: [id])
+  customer            Customer           @relation(fields: [customerId], references: [id])
+  department          Department?        @relation(fields: [departmentId], references: [id])
+  org                 Organization       @relation(fields: [orgId], references: [id])
+  notes               ConversationNote[]
+  tags                ConversationTag[]
+  messages            Message[]
 }
 
 model Message {
@@ -124,55 +111,50 @@ model Message {
   senderType     SenderType
   senderId       String?
   content        String
-  // Optional external message id from providers (e.g. Meta mid)
-  externalId     String?
-  status         MessageStatus @default(SENT)
-  retryCount     Int           @default(0)
   createdAt      DateTime      @default(now())
-
-  conversation Conversation @relation(fields: [conversationId], references: [id])
+  externalId     String?
+  retryCount     Int           @default(0)
+  status         MessageStatus @default(SENT)
+  conversation   Conversation  @relation(fields: [conversationId], references: [id])
 
   @@unique([conversationId, externalId])
 }
 
 model AuditLog {
-  id         String      @id @default(cuid())
-  orgId      String      @db.Uuid
-  userId     String      @db.Uuid
+  id         String       @id @default(cuid())
+  orgId      String       @db.Uuid
+  userId     String       @db.Uuid
   action     AuditAction
   targetId   String
   targetType String
-  createdAt  DateTime    @default(now())
-
-  org Organization @relation(fields: [orgId], references: [id])
+  createdAt  DateTime     @default(now())
+  org        Organization @relation(fields: [orgId], references: [id])
 }
 
 model CustomerNote {
-  id         String   @id @default(cuid())
-  orgId      String   @db.Uuid
+  id         String       @id @default(cuid())
+  orgId      String       @db.Uuid
   customerId String
-  userId     String   @db.Uuid
+  userId     String       @db.Uuid
   content    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  org      Organization @relation(fields: [orgId], references: [id])
-  customer Customer     @relation(fields: [customerId], references: [id])
-  user     User         @relation(fields: [userId], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  customer   Customer     @relation(fields: [customerId], references: [id])
+  org        Organization @relation(fields: [orgId], references: [id])
+  user       User         @relation(fields: [userId], references: [id])
 
   @@unique([customerId, userId])
 }
 
 model RoutingSettings {
-  id                 String            @id @default(cuid())
-  orgId              String            @unique @db.Uuid
-  autoRoutingEnabled Boolean           @default(true)
-  routeTo            RouteTo           @default(LIVE_AGENTS_ONLY)
-  fallbackBehavior   FallbackBehavior  @default(ASSIGN_ADMIN)
+  id                 String           @id @default(cuid())
+  orgId              String           @unique @db.Uuid
+  autoRoutingEnabled Boolean          @default(true)
+  routeTo            RouteTo          @default(LIVE_AGENTS_ONLY)
+  fallbackBehavior   FallbackBehavior @default(ASSIGN_ADMIN)
   afterHoursConfig   Json?
   metadata           Json?
-
-  org Organization @relation(fields: [orgId], references: [id])
+  org                Organization     @relation(fields: [orgId], references: [id])
 }
 
 model AutoReply {
@@ -185,36 +167,28 @@ model AutoReply {
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   metadata     Json?
-
-  org        Organization @relation(fields: [orgId], references: [id])
-  department Department?  @relation(fields: [departmentId], references: [id])
+  department   Department?      @relation(fields: [departmentId], references: [id])
+  org          Organization     @relation(fields: [orgId], references: [id])
 }
 
 model Tag {
-  id        String   @id @default(cuid())
-  orgId     String   @db.Uuid
-  name      String
-  type      TagType
-  color     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  org               Organization     @relation(fields: [orgId], references: [id])
-  conversationTags  ConversationTag[]
-  customerTags      CustomerTag[]
-}
-
-enum TagType {
-  CONVERSATION
-  CUSTOMER
+  id               String            @id @default(cuid())
+  orgId            String            @db.Uuid
+  name             String
+  type             TagType
+  color            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  conversationTags ConversationTag[]
+  customerTags     CustomerTag[]
+  org              Organization      @relation(fields: [orgId], references: [id])
 }
 
 model ConversationTag {
   conversationId String
   tagId          String
-
-  conversation Conversation @relation(fields: [conversationId], references: [id])
-  tag          Tag          @relation(fields: [tagId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  tag            Tag          @relation(fields: [tagId], references: [id])
 
   @@id([conversationId, tagId])
 }
@@ -222,42 +196,56 @@ model ConversationTag {
 model CustomerTag {
   customerId String
   tagId      String
-
-  customer Customer @relation(fields: [customerId], references: [id])
-  tag      Tag      @relation(fields: [tagId], references: [id])
+  customer   Customer @relation(fields: [customerId], references: [id])
+  tag        Tag      @relation(fields: [tagId], references: [id])
 
   @@id([customerId, tagId])
 }
 
 model ConversationNote {
-  id             String   @id @default(cuid())
-  orgId          String   @db.Uuid
+  id             String       @id @default(cuid())
+  orgId          String       @db.Uuid
   conversationId String
-  authorId       String   @db.Uuid
+  authorId       String       @db.Uuid
   content        String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  org          Organization @relation(fields: [orgId], references: [id])
-  conversation Conversation  @relation(fields: [conversationId], references: [id])
-  author       User          @relation(fields: [authorId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  author         User         @relation(fields: [authorId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  org            Organization @relation(fields: [orgId], references: [id])
 }
 
 model SavedReply {
-  id           String   @id @default(cuid())
-  orgId        String   @db.Uuid
+  id           String       @id @default(cuid())
+  orgId        String       @db.Uuid
   departmentId String?
   name         String
   shortcut     String?
   body         String
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  org        Organization @relation(fields: [orgId], references: [id])
-  department Department?  @relation(fields: [departmentId], references: [id])
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  org          Organization @relation(fields: [orgId], references: [id])
 
   @@index([orgId, departmentId])
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+  PENDING
+  RESOLVED
+}
+
+enum TagType {
+  CONVERSATION
+  CUSTOMER
 }
 
 enum AuditAction {
@@ -269,6 +257,7 @@ enum AuditAction {
   CONVERSATION_TAG_REMOVED
   CUSTOMER_TAG_ADDED
   CUSTOMER_TAG_REMOVED
+  CONVERSATION_RESOLVED
   CONVERSATION_NOTE_CREATED
   CONVERSATION_NOTE_UPDATED
   CONVERSATION_NOTE_DELETED
@@ -287,7 +276,10 @@ enum SenderType {
 enum Channel {
   FACEBOOK_MESSENGER
   INSTAGRAM
+  WHATSAPP
+  EMAIL
 }
+
 
 enum MessageStatus {
   PENDING

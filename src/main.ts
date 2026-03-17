@@ -24,20 +24,24 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Capture rawBody for signature verification (e.g. Meta webhooks)
+  // Capture rawBody for signature verification (e.g. Meta webhooks)
   app.use(
     bodyParser.json({
+      limit: '50mb',
       verify: (req: any, _res, buf) => {
         req.rawBody = buf;
       },
     }),
   );
-  
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
   // Enable CORS for frontend
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

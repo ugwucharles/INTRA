@@ -18,7 +18,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const idleTimeoutId = useRef<number | null>(null);
+  const tabAwayTimeoutId = useRef<number | null>(null);
   const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+  const TAB_AWAY_TIMEOUT_MS = 90 * 1000; // 90 seconds
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -49,6 +51,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await api.auth.login(dto);
     localStorage.setItem('token', response.access_token);
     setUser(response.user);
+    
+    try {
+      await api.auth.updateStatus(true);
+    } catch {
+      // Ignore initial status update errors
+    }
   };
 
   const register = async (dto: RegisterAdminDto) => {
@@ -57,7 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(response.user);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (user) {
+      try {
+        await api.auth.updateStatus(false);
+      } catch {
+        // Ignore error when logging out
+      }
+    }
     localStorage.removeItem('token');
     setUser(null);
   };
@@ -92,13 +107,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const events: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'click', 'focus'];
     events.forEach((event) => window.addEventListener(event, resetTimer));
 
+    // Handle tab switching (visibilitychange) and closing the window
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Tab is hidden (user switched tabs or minimized) -> wait 90 seconds before going offline
+        if (tabAwayTimeoutId.current !== null) {
+          window.clearTimeout(tabAwayTimeoutId.current);
+        }
+        tabAwayTimeoutId.current = window.setTimeout(() => {
+          api.auth.updateStatus(false).catch(() => {});
+        }, TAB_AWAY_TIMEOUT_MS);
+      } else {
+        // Tab is active again -> cancel the 90s countdown, tell server we're online
+        if (tabAwayTimeoutId.current !== null) {
+          window.clearTimeout(tabAwayTimeoutId.current);
+          tabAwayTimeoutId.current = null;
+        }
+        api.auth.updateStatus(true).catch(() => {});
+        resetTimer();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      // User is closing the tab/window -> tell server we're offline
+      // Note: We use keepalive or a synchronous-like request if possible, but fetch usually fires okay if simple
+      api.auth.updateStatus(false).catch(() => {});
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     resetTimer();
 
     return () => {
       events.forEach((event) => window.removeEventListener(event, resetTimer));
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      
       if (idleTimeoutId.current !== null) {
         window.clearTimeout(idleTimeoutId.current);
         idleTimeoutId.current = null;
+      }
+      if (tabAwayTimeoutId.current !== null) {
+        window.clearTimeout(tabAwayTimeoutId.current);
+        tabAwayTimeoutId.current = null;
       }
     };
   }, [user]);

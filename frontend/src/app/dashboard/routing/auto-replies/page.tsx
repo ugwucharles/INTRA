@@ -160,7 +160,7 @@ export default function RoutingAutoRepliesPage() {
                 </Button>
               </div>
               <textarea
-                className="w-full border border-gray-200/80 rounded-xl px-3 py-2 text-sm min-h-[96px] bg-white/95 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all duration-200"
+                className="w-full border border-gray-200/80 rounded-xl px-3 py-2 text-sm min-h-[96px] bg-white/95 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all duration-200"
                 value={autoReplyDrafts[trigger]}
                 onChange={(e) =>
                   setAutoReplyDrafts((prev) => ({

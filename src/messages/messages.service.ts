@@ -4,6 +4,8 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { JwtPayload } from '../auth/jwt.strategy';
 import { SenderType, $Enums, ConversationStatus } from '@prisma/client';
 import { MetaService } from '../meta/meta.service';
+import { EmailService } from '../email/email.service';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @Injectable()
 export class MessagesService {
@@ -12,6 +14,8 @@ export class MessagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly metaService: MetaService,
+    private readonly emailService: EmailService,
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   async createMessage(
@@ -30,9 +34,12 @@ export class MessagesService {
       throw new NotFoundException('Conversation not found in this organization');
     }
 
-    // Do not allow sending new staff messages on CLOSED conversations.
-    if (conversation.status === ConversationStatus.CLOSED) {
-      throw new ForbiddenException('Cannot send messages on a closed conversation');
+    // Do not allow sending new staff messages on CLOSED or RESOLVED conversations.
+    if (
+      conversation.status === ConversationStatus.CLOSED ||
+      conversation.status === ConversationStatus.RESOLVED
+    ) {
+      throw new ForbiddenException('Cannot send messages on a closed or resolved conversation');
     }
 
     // AGENT can send only on assigned conversations
@@ -60,24 +67,41 @@ export class MessagesService {
       });
 
       const customer = fullConversation?.customer;
-      if (
-        customer &&
-        customer.source &&
-        [
-          $Enums.Channel.FACEBOOK_MESSENGER,
-          $Enums.Channel.INSTAGRAM,
-        ].includes(customer.source)
-      ) {
-        // Auto-send outbound messages for Messenger and Instagram via Meta /me/messages.
-        await this.metaService.sendOutboundTextMessage(
-          currentUser.orgId,
-          conversation.id,
-          customer,
-          dto.content,
-        );
+      if (customer && customer.source) {
+        if (
+          ([
+            $Enums.Channel.FACEBOOK_MESSENGER,
+            $Enums.Channel.INSTAGRAM,
+            $Enums.Channel.WHATSAPP,
+          ] as string[]).includes(customer.source)
+        ) {
+          // Auto-send outbound messages for Messenger, Instagram, and WhatsApp.
+          await this.metaService.sendOutboundTextMessage(
+            currentUser.orgId,
+            conversation.id,
+            customer,
+            dto.content,
+          );
+        } else if ((customer.source as string) === 'EMAIL' && customer.email) {
+          // Auto-send outbound messages for EMAIL
+          await this.emailService.sendReply(
+            currentUser.orgId,
+            conversation.id,
+            customer.email,
+            dto.content,
+            message.id,
+          );
+        }
       }
+ 
+      // Emit real-time update via WebSocket
+      this.socketGateway.emitToOrg(currentUser.orgId, 'conversation_updated', {
+        conversationId: conversation.id,
+        lastMessage: dto.content,
+      });
+      this.socketGateway.emitToConversation(conversation.id, 'new_message', message);
     } catch (err) {
-      this.logger.error('Failed to send outbound Meta message', err as Error);
+      this.logger.error('Failed to send outbound message', err as Error);
     }
 
     return message;

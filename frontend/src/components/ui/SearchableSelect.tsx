@@ -38,9 +38,9 @@ export function SearchableSelect({
     query.trim().length === 0
       ? options
       : options.filter((o) => {
-          const haystack = `${o.label} ${o.description ?? ''}`.toLowerCase();
-          return haystack.includes(query.toLowerCase());
-        });
+        const haystack = `${o.label} ${o.description ?? ''}`.toLowerCase();
+        return haystack.includes(query.toLowerCase());
+      });
 
   useEffect(() => {
     if (!open) return;
@@ -104,8 +104,8 @@ export function SearchableSelect({
           bg-white/95 backdrop-blur-xl shadow-sm
           transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
           ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-          ${open 
-            ? 'border-blue-500/50 ring-2 ring-blue-500/20 shadow-lg shadow-blue-500/10 scale-[1.01]' 
+          ${open
+            ? 'border-orange-500/50 ring-2 ring-orange-500/20 shadow-lg shadow-orange-500/10 scale-[1.01]'
             : 'border-gray-200/80 hover:border-gray-300 hover:shadow-md active:scale-[0.99]'
           }
         `}
@@ -114,7 +114,7 @@ export function SearchableSelect({
           {selected ? selected.label : placeholder}
         </span>
         <svg
-          className={`w-4 h-4 text-gray-400 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? 'rotate-180 text-blue-500' : ''}`}
+          className={`w-4 h-4 text-gray-400 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? 'rotate-180 text-orange-500' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -130,8 +130,8 @@ export function SearchableSelect({
             bg-white/98 backdrop-blur-2xl shadow-2xl shadow-black/10
             max-h-72 overflow-hidden z-50 relative
             transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-            ${isAnimating 
-              ? 'opacity-0 scale-95 translate-y-[-8px]' 
+            ${isAnimating
+              ? 'opacity-0 scale-95 translate-y-[-8px]'
               : 'opacity-100 scale-100 translate-y-0'
             }
           `}
@@ -147,8 +147,8 @@ export function SearchableSelect({
               placeholder="Search..."
               className="
                 w-full px-3 py-2 text-sm rounded-xl border border-gray-200/80
-                bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30
-                focus:border-blue-500/50 transition-all duration-200
+                bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-orange-500/30
+                focus:border-orange-500/50 transition-all duration-200
                 placeholder:text-gray-400
               "
             />
@@ -167,15 +167,15 @@ export function SearchableSelect({
                   className={`
                     w-full flex flex-col items-start px-4 py-2.5 text-left
                     transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]
-                    hover:bg-blue-50/50 active:bg-blue-100/50 active:scale-[0.98]
-                    ${isSelected ? 'bg-blue-50/80 border-l-2 border-blue-500' : ''}
+                    hover:bg-orange-50/50 active:bg-orange-100/50 active:scale-[0.98]
+                    ${isSelected ? 'bg-orange-50/80 border-l-2 border-orange-500' : ''}
                   `}
                   style={{
                     animationDelay: `${index * 20}ms`,
                     animation: 'ios-fade-in 0.2s ease-out both',
                   }}
                 >
-                  <span className={`text-sm ${isSelected ? 'text-blue-600 font-medium' : 'text-gray-900'}`}>
+                  <span className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-900'}`}>
                     {option.label}
                   </span>
                   {option.description && (

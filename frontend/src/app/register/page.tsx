@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -38,7 +39,9 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-12">
       <div className="w-full max-w-md ios-appear">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-black mb-2">INTRA</h1>
+          <div className="flex justify-center mb-4">
+            <Image src="/logo1.png" alt="Logo" width={120} height={40} className="h-10 w-auto" />
+          </div>
           <p className="text-gray-600">Create your organization</p>
         </div>
 
@@ -94,7 +97,7 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-black hover:underline">
+            <Link href="/login" className="font-medium text-orange-500 hover:text-orange-600 hover:underline">
               Sign in
             </Link>
           </p>

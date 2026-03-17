@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
+import { StaffCard } from '@/components/ui/StaffCard';
 
 export default function StaffPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function StaffPage() {
   const isAdmin = user?.role === 'ADMIN';
 
   const [staff, setStaff] = useState<User[]>([]);
+  const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -34,22 +36,23 @@ export default function StaffPage() {
   const [creating, setCreating] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
-    if (!isAdmin) {
-      // Non-admins should not be here; send them back to conversations.
-      router.push('/dashboard');
-      return;
+    if (isAdmin) {
+      loadStaff();
     }
-
-    loadStaff();
   }, [isAdmin]);
 
   const loadStaff = async () => {
     try {
       setLoading(true);
-      const data = await api.staff.list();
-      setStaff(data);
+      const [staffData, conversationsData] = await Promise.all([
+        api.staff.list(),
+        api.conversations.list()
+      ]);
+      setStaff(staffData);
+      setConversations(conversationsData);
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load staff');
@@ -138,146 +141,185 @@ export default function StaffPage() {
   };
 
   if (!isAdmin) {
-    // While redirecting, show nothing special.
-    return null;
-  }
-
-  if (loading) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="h-full flex items-center justify-center">
-            <div className="text-gray-500">Loading staff...</div>
+          <div className="h-full flex items-center justify-center bg-[#FFFCF1]/50">
+            <div className="text-gray-500 text-sm">Only admins can view staff management.</div>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
     );
   }
 
+
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="h-full flex items-center justify-center bg-[#FFFCF1]/50">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
+              <div className="text-gray-400 font-medium animate-pulse">Loading staff...</div>
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  // Real stats calculation based on conversation data
+  const staffWithStats = staff.map(member => {
+    const memberConvs = conversations.filter(c => c.assignedTo === member.id);
+    const departmentName = member.departments && member.departments.length > 0
+      ? member.departments[0]
+      : null;
+    const defaultTitle = departmentName || member.email;
+
+    return {
+      ...member,
+      title: member.role === 'ADMIN' ? 'System Administrator' : defaultTitle,
+      stats: {
+        completed: memberConvs.filter(c => c.status === 'CLOSED').length,
+        open: memberConvs.filter(c => c.status === 'OPEN').length,
+        pending: memberConvs.filter(c => c.status === 'PENDING').length,
+      }
+    };
+  });
+
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="h-full flex flex-col bg-white">
+        <div className="h-full flex flex-col bg-[#FFFCF1]/50 overflow-hidden">
           {/* Header */}
-          <div className="border-b border-gray-200 px-8 py-6 flex items-center justify-between ios-appear">
+          <div className="px-8 py-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between ios-appear">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Staff</h1>
-              <p className="text-gray-600 mt-1">
-                Manage your agents and see who is handling conversations.
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                Staff <span className="text-gray-400 font-medium">({staff.length})</span>
+              </h1>
+              <p className="text-gray-500 mt-1">Manage your team and track their workload across the CRM.</p>
             </div>
-            <Button onClick={() => setIsAddModalOpen(true)}>Add Staff Member</Button>
+
+            <div className="flex items-center gap-3">
+              {/* View Toggle */}
+              <div className="bg-gray-100/50 border border-gray-200 p-1 rounded-xl flex items-center mr-2">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  List
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'grid' ? 'bg-orange-500 shadow-sm text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Card
+                </button>
+              </div>
+
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="shadow-md shadow-orange-500/10"
+              >
+                + Add Staff
+              </Button>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="flex-1 overflow-y-auto px-8 pb-12">
             {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-700 ios-appear">
                 {error}
               </div>
             )}
 
             {staff.length === 0 ? (
-              <div className="text-center text-gray-500 py-12">
-                No staff members yet. Use "Add Staff Member" to invite your first agent.
+              <div className="h-64 flex flex-col items-center justify-center text-center ios-appear">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-400 font-medium">No staff members found.</p>
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="mt-2 text-orange-500 font-bold text-sm hover:underline"
+                >
+                  Add your first agent
+                </button>
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ios-appear">
+                {staffWithStats.map((member) => (
+                  <StaffCard
+                    key={member.id}
+                    staff={member as any}
+                    onClick={() => openEditModal(member)}
+                  />
+                ))}
               </div>
             ) : (
-              <Card className="overflow-hidden ios-appear">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Assigned Conversations
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Last active
-                      </th>
-                      <th className="px-6 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {staff.map((member) => (
-                      <tr key={member.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {member.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {member.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              member.role === 'ADMIN'
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-blue-100 text-blue-800'
-                            }`}
-                          >
-                            {member.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              member.isActive
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-600'
-                            }`}
-                          >
-                            {member.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {member.assignedCount ?? 0}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {member.createdAt
-                            ? new Date(member.createdAt).toLocaleString()
-                            : '—'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-3">
-                          <button
-                            onClick={() => openEditModal(member)}
-                            className="text-gray-700 hover:text-gray-900 text-sm font-medium"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeactivate(member.id)}
-                            disabled={deactivatingId === member.id}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            {member.isActive
-                              ? deactivatingId === member.id
-                                ? 'Deactivating...'
-                                : 'Deactivate'
-                              : 'Deactivate'}
-                          </button>
-                        </td>
+              <Card className="overflow-hidden shadow-sm border-gray-100 ios-appear">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gray-50/50">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Name</th>
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email</th>
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Role</th>
+                        <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                        <th className="px-6 py-4" />
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-50">
+                      {staff.map((member) => (
+                        <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 font-bold text-xs ring-4 ring-white shadow-sm">
+                                {member.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="text-sm font-bold text-gray-900">{member.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.email}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${member.role === 'ADMIN' ? 'bg-purple-50 text-purple-600 border-purple-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                              {member.role}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <div className={`w-1.5 h-1.5 rounded-full ${member.isOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-gray-300'}`} />
+                              <span className="text-xs font-semibold text-gray-600">{member.isOnline ? 'Online' : 'Offline'}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-xs space-x-4">
+                            <button onClick={() => openEditModal(member)} className="text-gray-400 hover:text-orange-500 font-bold transition-colors">Edit</button>
+                            <button
+                              onClick={() => handleDeactivate(member.id)}
+                              disabled={deactivatingId === member.id}
+                              className="text-gray-400 hover:text-red-500 font-bold transition-colors"
+                            >
+                              {member.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </Card>
             )}
           </div>
         </div>
 
+
         {/* Add Staff Modal */}
         <Modal
           isOpen={isAddModalOpen}
-          title="Add Staff Member"
+          title="Add Staff"
           onClose={() => {
             if (creating) return;
             setIsAddModalOpen(false);
@@ -301,7 +343,7 @@ export default function StaffPage() {
             />
             <Input
               type="password"
-              label="Temporary password"
+              label="Password"
               placeholder="Set a starter password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -329,7 +371,7 @@ export default function StaffPage() {
         {/* Edit Staff Modal */}
         <Modal
           isOpen={isEditModalOpen}
-          title="Edit Staff Member"
+          title="Edit Staff"
           onClose={() => {
             if (savingEdit) return;
             setIsEditModalOpen(false);

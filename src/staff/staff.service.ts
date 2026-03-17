@@ -8,7 +8,7 @@ import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class StaffService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createStaff(currentUser: JwtPayload, dto: CreateStaffDto) {
     const { name, email, password } = dto;
@@ -45,10 +45,12 @@ export class StaffService {
     const staff = await this.prisma.user.findMany({
       where: {
         orgId: currentUser.orgId,
-        role: UserRole.AGENT,
       },
       orderBy: { createdAt: 'asc' },
       include: {
+        departments: {
+          select: { name: true },
+        },
         _count: {
           select: { assignedConversations: true },
         },
@@ -58,6 +60,9 @@ export class StaffService {
     return staff.map((u) => ({
       ...this.sanitizeUser(u),
       assignedCount: u._count.assignedConversations,
+      departments: u.departments.map((d) => d.name),
+      ratingTotal: u.ratingTotal,
+      ratingCount: u.ratingCount,
     }));
   }
 

@@ -10,6 +10,11 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('🚫 Seed script is disabled in production. Exiting.');
+    process.exit(1);
+  }
+
   console.log('Seeding INTRA dev data...');
 
   // 1) Create organization
@@ -273,6 +278,64 @@ async function main() {
   });
 
   console.log('Seeding complete. Admin login: admin@example.com / password123');
+
+  // --- EXTRA SEEDING FOR USER REQUEST ---
+  const extraOrgId = org.id;
+  console.log(`Seeding EXTRA data for org: ${extraOrgId}`);
+
+  const dept1 = await prisma.department.create({
+    data: {
+      orgId: extraOrgId,
+      name: 'Technical Support',
+      isActive: true,
+    },
+  });
+
+  const dept2 = await prisma.department.create({
+    data: {
+      orgId: extraOrgId,
+      name: 'Account Management',
+      isActive: true,
+    },
+  });
+
+  const extraPasswordHash = await bcrypt.hash('password123', 10);
+  const extraStaffData = [
+    { name: 'James Wilson', email: 'james@example.com' },
+    { name: 'Linda Chen', email: 'linda@example.com' },
+    { name: 'Robert Taylor', email: 'robert@example.com' },
+    { name: 'Maria Garcia', email: 'maria@example.com' },
+    { name: 'David Miller', email: 'david@example.com' },
+    { name: 'Sarah Brown', email: 'sarah@example.com' },
+    { name: 'Michael Davis', email: 'michael@example.com' },
+    { name: 'Karen White', email: 'karen@example.com' },
+    { name: 'Thomas Moore', email: 'thomas@example.com' },
+    { name: 'Nancy King', email: 'nancy@example.com' },
+  ];
+
+  for (let i = 0; i < extraStaffData.length; i++) {
+    const data = extraStaffData[i];
+    try {
+      await prisma.user.create({
+        data: {
+          orgId: extraOrgId,
+          name: data.name,
+          email: data.email,
+          password: extraPasswordHash,
+          role: UserRole.AGENT,
+          isActive: true,
+          isOnline: i < 2,
+          departments: {
+            connect: { id: i < 5 ? dept1.id : dept2.id },
+          },
+        },
+      });
+      console.log(`Created extra staff: ${data.name} (${data.email})`);
+    } catch (err: any) {
+      if (err.code !== 'P2002') throw err;
+    }
+  }
+  console.log('--- EXTRA SEEDING COMPLETE ---');
 }
 
 main()

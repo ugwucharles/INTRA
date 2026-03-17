@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async registerAdmin(dto: RegisterAdminDto) {
     const { organizationName, name, email, password } = dto;
@@ -107,6 +107,9 @@ export class AuthService {
       role: user.role,
       isActive: user.isActive,
       isOnline: user.isOnline,
+      profilePicture: user.profilePicture,
+      title: user.title,
+      level: user.level,
     } as const;
 
     // Match frontend expectation: { access_token, user }
@@ -136,6 +139,9 @@ export class AuthService {
       role: user.role,
       isActive: user.isActive,
       isOnline: user.isOnline,
+      profilePicture: user.profilePicture,
+      title: user.title,
+      level: user.level,
       createdAt: user.createdAt,
     };
   }
@@ -154,6 +160,38 @@ export class AuthService {
       role: user.role,
       isActive: user.isActive,
       isOnline: user.isOnline,
+      createdAt: user.createdAt,
+    };
+  }
+
+  async updateProfile(
+    currentUser: JwtPayload,
+    dto: { name?: string; email?: string; password?: string; profilePicture?: string },
+  ) {
+    const data: any = {};
+    if (dto.name) data.name = dto.name;
+    if (dto.email) data.email = dto.email;
+    if (dto.profilePicture) data.profilePicture = dto.profilePicture;
+    if (dto.password) {
+      data.password = await bcrypt.hash(dto.password, 10);
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: currentUser.userId },
+      data,
+    });
+
+    return {
+      id: user.id,
+      orgId: user.orgId,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      isOnline: user.isOnline,
+      profilePicture: user.profilePicture,
+      title: user.title,
+      level: user.level,
       createdAt: user.createdAt,
     };
   }

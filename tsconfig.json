@@ -22,5 +22,11 @@
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true
   },
-  "exclude": ["frontend"]
+  "exclude": [
+    "frontend",
+    "prisma",
+    "scripts",
+    "node_modules",
+    "dist"
+  ]
 }

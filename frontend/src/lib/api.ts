@@ -22,6 +22,17 @@ export interface User {
   orgId: string;
   createdAt?: string;
   assignedCount?: number;
+  profilePicture?: string;
+  title?: string;
+  level?: 'Junior' | 'Middle' | 'Senior';
+  ratingTotal: number;
+  ratingCount: number;
+  stats?: {
+    completed: number;
+    open: number;
+    pending: number;
+  };
+  departments?: string[];
 }
 
 export interface Customer {
@@ -29,8 +40,8 @@ export interface Customer {
   name?: string;
   email?: string;
   phone?: string;
-  // Optional: source channel for this customer (e.g. FACEBOOK_MESSENGER, INSTAGRAM)
-  source?: 'FACEBOOK_MESSENGER' | 'INSTAGRAM';
+  // Optional: source channel for this customer (e.g. FACEBOOK_MESSENGER, INSTAGRAM, WHATSAPP, EMAIL)
+  source?: 'FACEBOOK_MESSENGER' | 'INSTAGRAM' | 'WHATSAPP' | 'EMAIL';
   // Optional: external identifier from third-party channels (e.g. Facebook PSID)
   externalId?: string;
   // Whether this customer has been explicitly saved as a contact in the CRM
@@ -53,7 +64,7 @@ export interface Conversation {
   customerId: string;
   assignedTo?: string;
   departmentId?: string | null;
-  status: 'OPEN' | 'CLOSED' | 'PENDING';
+  status: 'OPEN' | 'CLOSED' | 'PENDING' | 'RESOLVED';
   isStarred?: boolean;
   unreadCount?: number;
   createdAt: string;
@@ -149,7 +160,7 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -188,6 +199,11 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify({ isOnline }),
       }),
+    updateProfile: (dto: { name?: string; email?: string; password?: string; profilePicture?: string }) =>
+      request<User>('/auth/me', {
+        method: 'PATCH',
+        body: JSON.stringify(dto),
+      }),
   },
   conversations: {
     list: () => request<Conversation[]>('/conversations'),
@@ -202,12 +218,15 @@ export const api = {
     close: (id: string) => request<Conversation>(`/conversations/${id}/close`, {
       method: 'PATCH',
     }),
+    resolve: (id: string) => request<Conversation>(`/conversations/${id}/resolve`, {
+      method: 'PATCH',
+    }),
     setStarred: (id: string, dto: { isStarred: boolean }) =>
       request<Conversation>(`/conversations/${id}/star`, {
         method: 'PATCH',
         body: JSON.stringify(dto),
       }),
-    updateStatus: (id: string, dto: { status: 'OPEN' | 'CLOSED' | 'PENDING' }) =>
+    updateStatus: (id: string, dto: { status: 'OPEN' | 'CLOSED' | 'PENDING' | 'RESOLVED' }) =>
       request<Conversation>(`/conversations/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify(dto),

@@ -15,11 +15,11 @@ export function Button({
   const [isPressed, setIsPressed] = useState(false);
 
   const baseClasses =
-    'font-medium relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]';
+    'font-medium relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]';
 
   const variantClasses = {
     primary:
-      'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-600 hover:to-blue-700 active:shadow-md',
+      'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:from-orange-600 hover:to-orange-700 active:shadow-md',
     secondary:
       'bg-white/95 backdrop-blur-sm text-gray-900 border border-gray-200/80 shadow-sm hover:bg-white hover:shadow-md hover:border-gray-300 active:shadow-sm',
     ghost:

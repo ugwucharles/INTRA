@@ -59,7 +59,7 @@ export default function CustomersPage() {
       <ProtectedRoute>
         <DashboardLayout>
           <div className="h-full flex items-center justify-center">
-            <div className="text-gray-500">Loading customers...</div>
+            <div className="text-gray-500">Loading contacts...</div>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -74,14 +74,14 @@ export default function CustomersPage() {
         <div className="border-b border-gray-200 px-8 py-6 ios-appear">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Contacts</h1>
               <p className="text-gray-600 mt-1">
-                {customers.length} {customers.length === 1 ? 'customer' : 'customers'}
+                {customers.length} {customers.length === 1 ? 'contact' : 'contacts'}
               </p>
             </div>
             {isAdmin && (
               <Button onClick={() => setShowAddForm(!showAddForm)}>
-                {showAddForm ? 'Cancel' : 'Add Customer'}
+                {showAddForm ? 'Cancel' : 'Add Contact'}
               </Button>
             )}
           </div>
@@ -91,7 +91,7 @@ export default function CustomersPage() {
         {isAdmin && showAddForm && (
           <div className="border-b border-gray-200 px-8 py-6 bg-gray-50 ios-scale-in">
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">New Customer</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">New Contact</h2>
               <form onSubmit={handleAddCustomer} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
@@ -115,7 +115,7 @@ export default function CustomersPage() {
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button type="submit">Add Customer</Button>
+                  <Button type="submit">Add Contact</Button>
                   <Button
                     type="button"
                     variant="secondary"
@@ -147,9 +147,9 @@ export default function CustomersPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers yet</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No contacts yet</h3>
               <p className="text-gray-600 max-w-md">
-                Add your first customer to get started with conversations.
+                Add your first contact to get started with conversations.
               </p>
             </div>
           ) : (
@@ -172,7 +172,7 @@ export default function CustomersPage() {
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {customer.name || 'Unnamed Customer'}
+                    {customer.name || 'Unnamed Contact'}
                   </h3>
                   <div className="space-y-2 text-sm text-gray-600">
                     {customer.email && (
@@ -198,10 +198,11 @@ export default function CustomersPage() {
                     </span>
                     {isAdmin &&
                       (customer.source === 'FACEBOOK_MESSENGER' ||
-                        customer.source === 'INSTAGRAM') && (
+                        customer.source === 'INSTAGRAM' ||
+                        customer.source === 'WHATSAPP') && (
                         <button
                         onClick={async () => {
-                          if (!confirm('Delete all data for this Messenger user?')) return;
+                          if (!confirm('Delete all data for this user?')) return;
                           try {
                             await api.meta.deleteData({ customerId: customer.id });
                             await loadCustomers();
