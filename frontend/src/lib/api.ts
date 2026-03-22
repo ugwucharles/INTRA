@@ -10,6 +10,16 @@ export interface RegisterAdminDto {
   name: string;
   email: string;
   password: string;
+  country: string;
+  phone: string;
+  address?: string;
+}
+
+export interface OnboardDto {
+  organizationName: string;
+  country: string;
+  phone: string;
+  address?: string;
 }
 
 export interface User {
@@ -20,6 +30,7 @@ export interface User {
   isActive: boolean;
   isOnline?: boolean;
   orgId: string;
+  orgOnboarded?: boolean;
   createdAt?: string;
   assignedCount?: number;
   profilePicture?: string;
@@ -69,6 +80,7 @@ export interface Conversation {
   unreadCount?: number;
   createdAt: string;
   updatedAt: string;
+  firstResponseTime?: number;
   customer?: Customer;
   assignee?: User;
   messages?: Message[];
@@ -138,6 +150,22 @@ export interface ConversationNote {
   author?: Pick<User, 'id' | 'name' | 'email'>;
 }
 
+export type SocialChannel = 'FACEBOOK_MESSENGER' | 'INSTAGRAM' | 'WHATSAPP' | 'EMAIL';
+
+export interface SocialAccount {
+  id: string;
+  orgId: string;
+  channel: SocialChannel;
+  displayName?: string | null;
+  pageId?: string | null;
+  accessToken: string;
+  appSecret?: string | null;
+  phoneNumberId?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SavedReply {
   id: string;
   orgId: string;
@@ -204,6 +232,13 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify(dto),
       }),
+    deleteOrganization: () => request<{ success: boolean }>('/auth/organization', {
+      method: 'DELETE',
+    }),
+    onboard: (dto: OnboardDto) => request<{ id: string; name: string; isOnboarded: boolean }>('/auth/onboard', {
+      method: 'PATCH',
+      body: JSON.stringify(dto),
+    }),
   },
   conversations: {
     list: () => request<Conversation[]>('/conversations'),
@@ -211,10 +246,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(dto),
     }),
-    assign: (id: string, dto: { assigneeId: string }) => request<Conversation>(`/conversations/${id}/assign`, {
-      method: 'PATCH',
-      body: JSON.stringify(dto),
-    }),
+    assign: (id: string, dto: { assigneeId: string }) =>
+      request<Conversation>(`/conversations/${id}/assign`, {
+        method: 'PATCH',
+        body: JSON.stringify(dto),
+      }),
+    handoff: (id: string, dto: { assigneeId: string; note?: string }) =>
+      request<Conversation>(`/conversations/${id}/handoff`, {
+        method: 'POST',
+        body: JSON.stringify(dto),
+      }),
     close: (id: string) => request<Conversation>(`/conversations/${id}/close`, {
       method: 'PATCH',
     }),
@@ -363,6 +404,42 @@ export const api = {
         body: JSON.stringify(dto),
       },
     ),
+  },
+  socialAccounts: {
+    list: () => request<SocialAccount[]>('/social-accounts'),
+    create: (dto: {
+      channel: SocialChannel;
+      accessToken: string;
+      displayName?: string;
+      pageId?: string;
+      appSecret?: string;
+      phoneNumberId?: string;
+    }) =>
+      request<SocialAccount>('/social-accounts', {
+        method: 'POST',
+        body: JSON.stringify(dto),
+      }),
+    update: (
+      id: string,
+      dto: {
+        displayName?: string;
+        accessToken?: string;
+        pageId?: string;
+        appSecret?: string;
+        phoneNumberId?: string;
+        isActive?: boolean;
+      },
+    ) =>
+      request<SocialAccount>(`/social-accounts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(dto),
+      }),
+    remove: (id: string) =>
+      request<{ success: boolean }>(`/social-accounts/${id}`, {
+        method: 'DELETE',
+      }),
+    oauthUrl: (channel: 'FACEBOOK_MESSENGER' | 'INSTAGRAM') =>
+      request<{ url: string }>(`/social-accounts/oauth/url?channel=${encodeURIComponent(channel)}`),
   },
   tags: {
     list: (type?: TagType) =>

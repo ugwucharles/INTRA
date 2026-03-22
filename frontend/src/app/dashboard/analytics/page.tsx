@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/Layout/DashboardLayout';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { api, Conversation, Customer, User } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -75,29 +76,53 @@ function KpiCard({ label, value, sub, color }: { label: string; value: number | 
 }
 
 // ─── page ────────────────────────────────────────────────────────────────────
-
 export default function AnalyticsPage() {
   const [conversations, setConversations] = useState<EnrichedConversation[]>([]);
   const [staff, setStaff] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [range, setRange] = useState<7 | 30>(7);
+  const { user } = useAuth();
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        const [convs, customers, staffList] = await Promise.all([
-          api.conversations.list(),
-          api.customers.list(),
-          api.staff.list(),
-        ]);
-        const enriched: EnrichedConversation[] = convs.map((c: Conversation) => ({
+        let convs, customers, staffList;
+
+        if (true) { // Force demo data for screenshots
+          // MOCK DATA FOR SCREENSHOTS
+          staffList = [
+            { id: 'u1', name: 'Sarah Miller', role: 'AGENT', isOnline: true, profilePicture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+            { id: 'u2', name: 'Mark Thompson', role: 'AGENT', isOnline: true, profilePicture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+            { id: 'u3', name: 'Admin Visuals', role: 'ADMIN', isOnline: true, profilePicture: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+          ];
+          customers = [
+            { id: 'c1', name: 'John Doe', source: 'WHATSAPP' },
+            { id: 'c2', name: 'Alice Smith', source: 'FACEBOOK_MESSENGER' },
+            { id: 'c3', name: 'Bob Wilson', source: 'INSTAGRAM' },
+            { id: 'c4', name: 'Emily Chen', source: 'EMAIL' }
+          ];
+          convs = [
+            { id: 'v1', customerId: 'c1', status: 'OPEN', createdAt: new Date(Date.now() - 3600000).toISOString(), firstResponseTime: 45, assignedTo: 'u3' },
+            { id: 'v2', customerId: 'c2', status: 'RESOLVED', createdAt: new Date(Date.now() - 86400000).toISOString(), firstResponseTime: 120, assignedTo: 'u1' },
+            { id: 'v3', customerId: 'c3', status: 'CLOSED', createdAt: new Date(Date.now() - 172800000).toISOString(), firstResponseTime: 30, assignedTo: 'u2' },
+            { id: 'v4', customerId: 'c4', status: 'OPEN', createdAt: new Date(Date.now() - 10800000).toISOString(), firstResponseTime: 65, assignedTo: 'u3' }
+          ];
+        } else {
+          [convs, customers, staffList] = await Promise.all([
+            api.conversations.list(),
+            api.customers.list(),
+            api.staff.list(),
+          ]);
+        }
+
+        const enriched: EnrichedConversation[] = convs.map((c: any) => ({
           ...c,
-          customer: customers.find((cu: Customer) => cu.id === c.customerId),
+          customer: customers.find((cu: any) => cu.id === c.customerId),
         }));
         setConversations(enriched);
-        setStaff(staffList);
+        setStaff(staffList as any);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load analytics');
       } finally {
@@ -105,7 +130,7 @@ export default function AnalyticsPage() {
       }
     };
     load();
-  }, []);
+  }, [user]);
 
   // ── KPIs ──────────────────────────────────────────────────────────────────
   const kpis = useMemo(() => {
@@ -114,7 +139,32 @@ export default function AnalyticsPage() {
     const pending = conversations.filter((c) => c.status === 'PENDING').length;
     const closed = conversations.filter((c) => c.status === 'CLOSED').length;
     const resolutionRate = total > 0 ? Math.round((closed / total) * 100) : 0;
-    return { total, open, pending, closed, resolutionRate };
+    
+    // Average Response Time
+    const respondedConvs = conversations.filter((c) => c.firstResponseTime != null);
+    let avgResponseTimeSeconds = 0;
+    if (respondedConvs.length > 0) {
+      const sum = respondedConvs.reduce((acc, c) => acc + (c.firstResponseTime || 0), 0);
+      avgResponseTimeSeconds = Math.round(sum / respondedConvs.length);
+    }
+    
+    // Format into text, e.g., "1m 30s" or "N/A"
+    let formattedResponseTime = "N/A";
+    if (respondedConvs.length > 0) {
+      if (avgResponseTimeSeconds < 60) {
+        formattedResponseTime = `${avgResponseTimeSeconds}s`;
+      } else if (avgResponseTimeSeconds < 3600) {
+        const mins = Math.floor(avgResponseTimeSeconds / 60);
+        const secs = avgResponseTimeSeconds % 60;
+        formattedResponseTime = `${mins}m ${secs}s`;
+      } else {
+        const hours = Math.floor(avgResponseTimeSeconds / 3600);
+        const mins = Math.floor((avgResponseTimeSeconds % 3600) / 60);
+        formattedResponseTime = `${hours}h ${mins}m`;
+      }
+    }
+
+    return { total, open, pending, closed, resolutionRate, formattedResponseTime };
   }, [conversations]);
 
   // ── Volume trends ─────────────────────────────────────────────────────────
@@ -217,19 +267,20 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            {error && (
+            {/* {error && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
                 {error}
               </div>
-            )}
+            )} */}
 
             {/* ── KPI row ─────────────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <KpiCard label="Total Conversations" value={kpis.total} color="text-gray-900" />
               <KpiCard label="Open" value={kpis.open} color="text-green-600" sub={kpis.total ? `${Math.round((kpis.open / kpis.total) * 100)}% of total` : undefined} />
               <KpiCard label="Pending" value={kpis.pending} color="text-yellow-600" sub={kpis.total ? `${Math.round((kpis.pending / kpis.total) * 100)}% of total` : undefined} />
               <KpiCard label="Closed" value={kpis.closed} color="text-gray-500" sub={kpis.total ? `${Math.round((kpis.closed / kpis.total) * 100)}% of total` : undefined} />
               <KpiCard label="Resolution Rate" value={`${kpis.resolutionRate}%`} color="text-orange-600" sub="Closed ÷ Total" />
+              <KpiCard label="Avg Response" value={kpis.formattedResponseTime} color="text-blue-600" sub="First reply" />
             </div>
 
             {/* ── Volume trends + Channel breakdown ──────────────────────── */}

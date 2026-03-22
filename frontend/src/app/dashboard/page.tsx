@@ -168,15 +168,86 @@ export default function ConversationsPage() {
       if (setLoadingState) {
         setLoading(true);
       }
-      const [conversationsData, customersData] = await Promise.all([
-        api.conversations.list(),
-        api.customers.list(),
-      ]);
+
+      let conversationsData: any[], customersData: any[];
+
+      if (true) { // Force demo data for screenshots
+        // MOCK DATA FOR SCREENSHOTS
+        customersData = [
+          { id: 'c1', name: 'John Doe', email: 'john@example.com', source: 'WHATSAPP' },
+          { id: 'c2', name: 'Alice Smith', email: 'alice@smith.com', source: 'FACEBOOK_MESSENGER' },
+          { id: 'c3', name: 'Michael Chen', email: 'michael@chen.com', source: 'INSTAGRAM' },
+          { id: 'c4', name: 'Sarah Jones', email: 'sarah.j@outlook.com', source: 'EMAIL' },
+          { id: 'c5', name: 'David Williams', email: 'david.w@company.com', source: 'WHATSAPP' },
+        ];
+        conversationsData = [
+          {
+            id: 'conv1',
+            customerId: 'c1',
+            status: 'OPEN',
+            updatedAt: new Date().toISOString(),
+            unreadCount: 2,
+            isStarred: true,
+            messages: [
+              { content: 'Where is my order #12345?', createdAt: new Date().toISOString() },
+            ],
+          },
+          {
+            id: 'conv2',
+            customerId: 'c2',
+            status: 'RESOLVED',
+            updatedAt: new Date(Date.now() - 3600000).toISOString(),
+            unreadCount: 0,
+            isStarred: false,
+            messages: [
+              { content: 'Thanks for the help!', createdAt: new Date(Date.now() - 3600000).toISOString() },
+            ],
+          },
+          {
+            id: 'conv3',
+            customerId: 'c3',
+            status: 'PENDING',
+            updatedAt: new Date(Date.now() - 7200000).toISOString(),
+            unreadCount: 1,
+            isStarred: true,
+            messages: [
+              { content: 'Can I get a refund?', createdAt: new Date(Date.now() - 7200000).toISOString() },
+            ],
+          },
+          {
+            id: 'conv4',
+            customerId: 'c4',
+            status: 'OPEN',
+            updatedAt: new Date(Date.now() - 86400000).toISOString(),
+            unreadCount: 0,
+            isStarred: false,
+            messages: [
+              { content: 'Pricing questions regarding enterprise plan', createdAt: new Date(Date.now() - 86400000).toISOString() },
+            ],
+          },
+          {
+            id: 'conv5',
+            customerId: 'c5',
+            status: 'CLOSED',
+            updatedAt: new Date(Date.now() - 172800000).toISOString(),
+            unreadCount: 0,
+            isStarred: false,
+            messages: [
+              { content: 'Issue with login', createdAt: new Date(Date.now() - 172800000).toISOString() },
+            ],
+          },
+        ];
+      } else {
+        [conversationsData, customersData] = await Promise.all([
+          api.conversations.list(),
+          api.customers.list(),
+        ]);
+      }
 
       // Merge customer data into conversations
-      const enrichedConversations = conversationsData.map((conv: Conversation) => ({
+      const enrichedConversations = conversationsData.map((conv: any) => ({
         ...conv,
-        customer: customersData.find((c: Customer) => c.id === conv.customerId),
+        customer: customersData.find((c: any) => c.id === conv.customerId),
       }));
 
       setConversations(enrichedConversations);
@@ -199,6 +270,22 @@ export default function ConversationsPage() {
 
   const loadStaffCount = async () => {
     try {
+      if (true) { // Force demo data for screenshots
+        const mockStaff = [
+          { id: 'u1', name: 'Sarah Miller', role: 'AGENT', isOnline: true, profilePicture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+          { id: 'u2', name: 'Mark Thompson', role: 'AGENT', isOnline: true, profilePicture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+          { id: 'u3', name: 'Admin Visuals', role: 'ADMIN', isOnline: true, profilePicture: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+        ];
+        setStaffInfo({
+          total: 50,
+          active: 12,
+          agents: 45,
+          agentsList: mockStaff.filter(s => s.role === 'AGENT') as any,
+          activeList: mockStaff as any
+        });
+        return;
+      }
+
       const data = await api.staff.list();
       const total = data.length;
       const activeList = data.filter((s: { isOnline?: boolean }) => s.isOnline);
@@ -264,14 +351,14 @@ export default function ConversationsPage() {
           {/* Stats Cards */}
           <div className="px-6 py-5 border-b border-gray-100">
             <div className="grid grid-cols-3 gap-4">
-              {/* Total Staff */}
+              {/* Total Conversations */}
               <div className="bg-white border border-gray-200 rounded-xl p-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500">Total Staff</span>
+                  <span className="text-sm font-medium text-gray-500">Total Conversations</span>
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-3xl font-semibold text-gray-900">{staffInfo.total}</span>
-                  <span className="text-xs text-gray-400 font-medium ml-1">Total members</span>
+                  <span className="text-3xl font-semibold text-gray-900">{conversations.length}</span>
+                  <span className="text-xs text-gray-400 font-medium ml-1">Total volume</span>
                 </div>
               </div>
 

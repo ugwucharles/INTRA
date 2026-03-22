@@ -1,16 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* Hide Next.js Dev Indicator for Professional Screenshots */
+[id^="nextjs"],
+[class^="nextjs"],
+[data-nextjs-dev-indicator],
+.__next-dev-status-indicator,
+[data-nextjs-dev-activity-indicator],
+#nextjs-dev-indicator,
+.__next-toast-v1,
+.__next-toast-wrapper,
+#nextjs-portal,
+div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"],
+div[style*="position: fixed"][style*="bottom: 0px"][style*="right: 0px"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 :root {
   --background: #FFFCF1;
   --foreground: #171717;
 
   /* FlymyMall Brand Colors */
-  --primary: #FFBE2E;
-  --primary-light: #FFC952;
-  --primary-dark: #FF9F2E;
-  --primary-50: #FFF6E0;
-  --primary-100: #FFEAB3;
+  --primary: #000000;
+  --primary-light: #222222;
+  --primary-dark: #000000;
+  --primary-50: #F3F4F6;
+  --primary-100: #E5E7EB;
 
   /* Neutral Colors */
   --gray-50: #F9FAFB;
@@ -42,7 +60,7 @@
   --color-orange-400: var(--primary-light);
   --color-orange-500: var(--primary);
   --color-orange-600: var(--primary-dark);
-  --color-orange-700: #E5A929;
+  --color-orange-700: #000000;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
@@ -96,7 +114,7 @@ textarea {
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid rgba(255, 190, 46, 0.5);
+  outline: 2px solid rgba(0, 0, 0, 0.5);
   outline-offset: 2px;
   border-radius: 4px;
 }

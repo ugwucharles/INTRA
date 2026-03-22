@@ -3,6 +3,16 @@ export class RegisterAdminDto {
   name!: string;
   email!: string;
   password!: string;
+  country!: string;
+  phone!: string;
+  address?: string;
+}
+
+export class OnboardDto {
+  organizationName!: string;
+  country!: string;
+  phone!: string;
+  address?: string;
 }
 
 export class LoginDto {

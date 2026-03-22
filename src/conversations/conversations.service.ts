@@ -53,11 +53,30 @@ export class ConversationsService {
       });
     }
 
-    // AGENT sees only assigned conversations
+    // AGENT sees assigned conversations, plus any conversations they've previously participated in
+    // (sent a staff message or added an internal note). Participation gives read-only access;
+    // message sending is enforced separately in MessagesService.
     return this.prisma.conversation.findMany({
       where: {
         orgId: currentUser.orgId,
-        assignedTo: currentUser.userId,
+        OR: [
+          { assignedTo: currentUser.userId },
+          {
+            messages: {
+              some: {
+                senderType: 'STAFF',
+                senderId: currentUser.userId,
+              },
+            },
+          },
+          {
+            notes: {
+              some: {
+                authorId: currentUser.userId,
+              },
+            },
+          },
+        ],
       },
       orderBy: { updatedAt: 'desc' },
     });
@@ -96,6 +115,75 @@ export class ConversationsService {
       where: { id: conversation.id },
       data: { assignedTo: assignee.id },
     });
+
+    await this.prisma.auditLog.create({
+      data: {
+        orgId: currentUser.orgId,
+        userId: currentUser.userId,
+        action: 'CONVERSATION_ASSIGNED',
+        targetId: updated.id,
+        targetType: 'conversation',
+      },
+    });
+
+    return updated;
+  }
+
+  async handoffConversation(
+    currentUser: JwtPayload,
+    conversationId: string,
+    assigneeId: string,
+    note?: string,
+  ) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        orgId: currentUser.orgId,
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found in this organization');
+    }
+
+    // Only the current assignee or an admin can hand off
+    const isCurrentAssignee = conversation.assignedTo === currentUser.userId;
+    if (!isCurrentAssignee && currentUser.role !== UserRole.ADMIN) {
+      throw new ForbiddenException(
+        'Only the current assignee or an admin can hand off this conversation',
+      );
+    }
+
+    const assignee = await this.prisma.user.findFirst({
+      where: {
+        id: assigneeId,
+        orgId: currentUser.orgId,
+        role: UserRole.AGENT,
+        isActive: true,
+      },
+    });
+
+    if (!assignee) {
+      throw new NotFoundException(
+        'Tagged agent not found or not an active agent in this organization',
+      );
+    }
+
+    const updated = await this.prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { assignedTo: assignee.id },
+    });
+
+    if (note && note.trim()) {
+      await this.prisma.conversationNote.create({
+        data: {
+          orgId: currentUser.orgId,
+          conversationId: updated.id,
+          authorId: currentUser.userId,
+          content: note,
+        },
+      });
+    }
 
     await this.prisma.auditLog.create({
       data: {

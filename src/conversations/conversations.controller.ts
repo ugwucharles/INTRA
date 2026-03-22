@@ -39,6 +39,23 @@ export class ConversationsController {
     return this.conversationsService.assignConversation(currentUser, id, dto);
   }
 
+  // Handoff via @-mention: reassign conversation without sending a customer message
+  @Post(':id/handoff')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.AGENT)
+  async handoffConversation(
+    @CurrentUser() currentUser: JwtPayload,
+    @Param('id') id: string,
+    @Body() body: { assigneeId: string; note?: string },
+  ) {
+    return this.conversationsService.handoffConversation(
+      currentUser,
+      id,
+      body.assigneeId,
+      body.note ?? '',
+    );
+  }
+
   @Patch(':id/close')
   async closeConversation(
     @CurrentUser() currentUser: JwtPayload,

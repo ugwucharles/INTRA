@@ -23,8 +23,8 @@ const QUEUE_NAME = 'meta-outbound';
 export class MetaOutboundQueue implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MetaOutboundQueue.name);
   private connection: IORedis | null = null;
-  private queue: Queue<OutboundJobData> | null = null;
-  private worker: Worker<OutboundJobData> | null = null;
+  private queue: Queue | null = null;
+  private worker: Worker | null = null;
 
   constructor(private readonly metaService: MetaService) {
     const redisUrl = process.env.REDIS_URL;
@@ -38,7 +38,9 @@ export class MetaOutboundQueue implements OnModuleInit, OnModuleDestroy {
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
     });
-    this.queue = new Queue<OutboundJobData>(QUEUE_NAME, { connection: this.connection });
+    // BullMQ's types are tied to its bundled ioredis version; at runtime any ioredis-compatible
+    // client works fine, but TypeScript will see them as incompatible when two ioredis copies exist.
+    this.queue = new Queue(QUEUE_NAME, { connection: this.connection as any });
   }
 
   async onModuleInit() {
@@ -47,14 +49,14 @@ export class MetaOutboundQueue implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    this.worker = new Worker<OutboundJobData>(
+    this.worker = new Worker(
       QUEUE_NAME,
       async (job) => {
         const { orgId, conversationId, customer, messageId, text } = job.data;
         await this.metaService.processOutboundJob(orgId, conversationId, customer, messageId, text);
       },
       {
-        connection: this.connection,
+        connection: this.connection as any,
       },
     );
 

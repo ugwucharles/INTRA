@@ -59,6 +59,15 @@ const mainNavigation: NavItem[] = [
       </svg>
     ),
   },
+  {
+    name: 'Channels',
+    href: '/dashboard/channels',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2h-2m-4-12V6a2 2 0 00-2-2H5a2 2 0 00-2 2v2m10 0H7m10 0v4m0 0H7m0 0v4m0-8V6m0 10v2a2 2 0 002 2h2a2 2 0 002-2v-2" />
+      </svg>
+    ),
+  },
 ];
 
 const bottomNavigation: NavItem[] = [
@@ -92,7 +101,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         {/* Logo */}
         <div className="h-16 px-5 flex items-center border-b border-gray-100">
           <Link href="/dashboard" className="flex items-center">
-            <Image src="/logo 2.png" alt="Logo" width={140} height={40} className="h-8 w-auto" />
+            <Image src="/intra.logo.1.png" alt="Logo" width={140} height={40} className="h-8 w-auto" />
           </Link>
         </div>
 
@@ -186,16 +195,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3 px-2">
             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
               {user?.profilePicture ? (
-                <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
-              ) : user?.name ? (
-                <span className="text-sm font-semibold text-gray-700">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
-              ) : (
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              )}
+                <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
+              ) : null}
+              <div className={`flex items-center justify-center w-full h-full ${user?.profilePicture ? 'hidden' : ''}`}>
+                {user?.name ? (
+                  <span className="text-sm font-semibold text-gray-700">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                ) : (
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                )}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900 truncate">

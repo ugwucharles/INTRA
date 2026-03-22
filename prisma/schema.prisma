@@ -9,6 +9,10 @@ datasource db {
 model Organization {
   id                String             @id @default(uuid()) @db.Uuid
   name              String
+  country           String?
+  phone             String?
+  address           String?
+  isOnboarded       Boolean            @default(false)
   createdAt         DateTime           @default(now())
   auditLogs         AuditLog[]
   autoReplies       AutoReply[]
@@ -19,8 +23,27 @@ model Organization {
   departments       Department[]
   routingSettings   RoutingSettings?
   savedReplies      SavedReply[]
+  socialAccounts    SocialAccount[]
   tags              Tag[]
   users             User[]
+}
+
+model SocialAccount {
+  id            String   @id @default(cuid())
+  orgId         String   @db.Uuid
+  channel       Channel
+  displayName   String?
+  pageId        String?
+  accessToken   String
+  appSecret     String?
+  phoneNumberId String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  org           Organization @relation(fields: [orgId], references: [id])
+
+  @@unique([orgId, channel])
+  @@index([pageId])
 }
 
 model Department {
@@ -92,6 +115,7 @@ model Conversation {
   departmentId        String?
   routingQuestionSent Boolean            @default(false)
   routingMetadata     Json?
+  firstResponseTime   Int?
   isStarred           Boolean            @default(false)
   awaitingRating      Boolean            @default(false)
   resolvedBy          String?            @db.Uuid

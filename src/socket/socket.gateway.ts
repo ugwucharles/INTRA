@@ -8,6 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
 
 @WebSocketGateway({
   cors: {
@@ -20,7 +21,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger = new Logger(SocketGateway.name);
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -41,14 +45,47 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (payload.orgId) {
         client.join(`org_${payload.orgId}`);
       }
+
+      await this.prisma.user.update({
+        where: { id: payload.userId },
+        data: { isOnline: true },
+      });
+      
+      if (payload.orgId) {
+        this.emitToOrg(
+          payload.orgId,
+          'userStatusChanged',
+          { userId: payload.userId, isOnline: true }
+        );
+      }
     } catch (err) {
       this.logger.error(`Client connection rejected: Invalid token. ID: ${client.id}`);
       client.disconnect();
     }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+    
+    const userPayload = client.data?.user;
+    if (userPayload?.userId) {
+      try {
+        await this.prisma.user.update({
+          where: { id: userPayload.userId },
+          data: { isOnline: false },
+        });
+        
+        if (userPayload.orgId) {
+          this.emitToOrg(
+            userPayload.orgId, 
+            'userStatusChanged', 
+            { userId: userPayload.userId, isOnline: false }
+          );
+        }
+      } catch (err) {
+        this.logger.error(`Failed to update offline status for user ${userPayload.userId}`, err);
+      }
+    }
   }
 
   emitToOrg(orgId: string, event: string, data: any) {

@@ -25,6 +25,7 @@ export default function ConversationDetailPage() {
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  const canLoadStaff = !!user; // both admins and agents can see staff list for @-mentions
   const conversationId = params.id as string;
   const { socket } = useSocket();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -73,6 +74,7 @@ export default function ConversationDetailPage() {
   // @-mention suggestions
   const [mentionQuery, setMentionQuery] = useState('');
   const [showMentionList, setShowMentionList] = useState(false);
+  const [mentionAssigneeId, setMentionAssigneeId] = useState<string | null>(null);
 
   // Saved replies (templates)
   const [savedReplies, setSavedReplies] = useState<SavedReply[]>([]);
@@ -89,9 +91,9 @@ export default function ConversationDetailPage() {
     }
   }, [conversationId]);
 
-  // Load staff list for ADMIN users so they can assign conversations
+  // Load staff list for admins and agents so they can @-mention colleagues
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!canLoadStaff) return;
 
     const loadStaff = async () => {
       try {
@@ -103,7 +105,7 @@ export default function ConversationDetailPage() {
     };
 
     loadStaff();
-  }, [isAdmin]);
+  }, [canLoadStaff]);
 
   // Real-time updates via WebSocket
   useEffect(() => {
@@ -206,16 +208,29 @@ export default function ConversationDetailPage() {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || sending) return;
+    const trimmed = newMessage.trim();
+    if (!trimmed || sending) return;
 
     setSending(true);
     try {
-      await api.messages.create(conversationId, { content: newMessage });
-      setNewMessage('');
-      await loadConversation();
-      // Reload messages and force scroll since we just sent one
-      await loadMessages(false);
-      scrollToBottom(true);
+      // If an @-mention has selected a specific assignee, treat this as an internal handoff
+      if (mentionAssigneeId) {
+        await api.conversations.handoff(conversationId, {
+          assigneeId: mentionAssigneeId,
+          note: trimmed,
+        });
+        setNewMessage('');
+        setMentionAssigneeId(null);
+        await loadConversation();
+        // Notes are loaded separately; no customer-facing message is sent
+      } else {
+        await api.messages.create(conversationId, { content: trimmed });
+        setNewMessage('');
+        await loadConversation();
+        // Reload messages and force scroll since we just sent one
+        await loadMessages(false);
+        scrollToBottom(true);
+      }
       setShowMentionList(false);
       setMentionQuery('');
     } catch (err) {
@@ -451,10 +466,21 @@ export default function ConversationDetailPage() {
   const isClosed = conversation.status === 'CLOSED';
   const isResolved = conversation.status === 'RESOLVED';
   const isInactiveConversation = isClosed || isResolved;
+  const isAssigned = !!conversation.assignedTo;
+  const isCurrentAssignee = !!user && conversation.assignedTo === user.id;
+  // Sending customer-facing messages:
+  // - If assigned: only the assigned agent can send (including when viewer is ADMIN).
+  // - If unassigned: only admins can send.
+  const canSendMessages =
+    !isInactiveConversation &&
+    (isAssigned ? isCurrentAssignee : isAdmin);
   const allMessages = [...historicalMessages, ...messages];
   const customerInitial = (conversation.customer?.name || conversation.customer?.email || '?')
     .charAt(0)
     .toUpperCase();
+  const assignedAgentName =
+    (conversation.assignedTo && staff.find((s) => s.id === conversation.assignedTo)?.name) ||
+    (conversation.assignedTo ? 'another agent' : null);
 
   return (
     <>
@@ -818,6 +844,42 @@ export default function ConversationDetailPage() {
             {/* Message input */}
             <div className="border-t border-gray-200 px-8 py-5 bg-white">
               <div className="max-w-3xl mx-auto space-y-2">
+                <div className="flex justify-start">
+                  {/* Internal notes modal trigger (always available) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowInternalNotesModal(true)}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                    title="View internal team notes for this conversation"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      {/* Clipboard / note stack icon */}
+                      <rect
+                        x="5"
+                        y="4"
+                        width="9"
+                        height="11"
+                        rx="1.5"
+                        strokeWidth={1.4}
+                      />
+                      <path
+                        d="M8 3h3.5a1 1 0 0 1 1 1V5"
+                        strokeWidth={1.4}
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M7.5 8h4M7.5 10.5h3"
+                        strokeWidth={1.4}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 {isInactiveConversation && (
                   <div className="text-xs text-gray-500">
                     {isResolved
@@ -825,212 +887,189 @@ export default function ConversationDetailPage() {
                       : 'This conversation is closed. You can no longer send new messages.'}
                   </div>
                 )}
-                <form onSubmit={handleFormSubmit} className="max-w-3xl mx-auto relative">
-                  <div className="flex gap-3 items-start">
-                    {/* Internal notes modal trigger */}
-                    <button
-                      type="button"
-                      onClick={() => setShowInternalNotesModal(true)}
-                      className="mt-0.5 inline-flex items-center justify-center w-8 h-8 rounded-full text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                      title="View internal team notes for this conversation"
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        stroke="currentColor"
-                      >
-                        {/* Clipboard / note stack icon */}
-                        <rect
-                          x="5"
-                          y="4"
-                          width="9"
-                          height="11"
-                          rx="1.5"
-                          strokeWidth={1.4}
-                        />
-                        <path
-                          d="M8 3h3.5a1 1 0 0 1 1 1V5"
-                          strokeWidth={1.4}
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M7.5 8h4M7.5 10.5h3"
-                          strokeWidth={1.4}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </button>
-                    {/* Private note toggle */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!conversation || conversation.status === 'CLOSED' || conversation.status === 'RESOLVED') return;
-                        if (conversation.assignedTo && conversation.assignedTo !== user?.id) return;
-                        if (!isNoteMode) {
-                          setNoteDraft(note);
-                        }
-                        setIsNoteMode(!isNoteMode);
-                        setShowMentionList(false);
-                        setMentionQuery('');
-                      }}
-                      className={`mt-0.5 inline-flex items-center justify-center w-8 h-8 rounded-full text-sm transition-colors ${isNoteMode ? 'text-yellow-600 bg-yellow-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-                        }`}
-                      title="Add private note about this contact"
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        stroke="currentColor"
-                      >
-                        {/* Book / notes icon */}
-                        <path
-                          d="M5 3.5A1.5 1.5 0 0 1 6.5 2h7A1.5 1.5 0 0 1 15 3.5v11A1.5 1.5 0 0 1 13.5 16h-7A1.5 1.5 0 0 0 5 17.5"
-                          strokeWidth={1.4}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M7 5.5h5M7 8h4M7 10.5h3"
-                          strokeWidth={1.4}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </button>
-                    <Input
-                      value={isNoteMode ? noteDraft : newMessage}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = e.target.value;
-                        if (isNoteMode) {
-                          setNoteDraft(value);
-                          return;
-                        }
+                {!canSendMessages && (
+                  <div className="text-xs text-gray-500">
+                    {isAssigned
+                      ? `Assigned to ${assignedAgentName}. Only the assigned agent can reply in this inbox.`
+                      : 'This conversation is unassigned. Only admins can reply.'}
+                  </div>
+                )}
 
-                        setNewMessage(value);
-
-                        // very lightweight @ mention detection: if user types '@' and we have staff, show list
-                        const atIndex = value.lastIndexOf('@');
-                        if (atIndex >= 0) {
-                          const query = value.slice(atIndex + 1).trim();
-                          setMentionQuery(query);
-                          setShowMentionList(true);
-                        } else {
+                {canSendMessages && (
+                  <form onSubmit={handleFormSubmit} className="max-w-3xl mx-auto relative">
+                    <div className="flex gap-3 items-start">
+                      {/* Private note toggle */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!conversation || conversation.status === 'CLOSED' || conversation.status === 'RESOLVED') return;
+                          if (conversation.assignedTo && conversation.assignedTo !== user?.id) return;
+                          if (!isNoteMode) {
+                            setNoteDraft(note);
+                          }
+                          setIsNoteMode(!isNoteMode);
                           setShowMentionList(false);
                           setMentionQuery('');
-                        }
+                        }}
+                        className={`mt-0.5 inline-flex items-center justify-center w-8 h-8 rounded-full text-sm transition-colors ${isNoteMode ? 'text-yellow-600 bg-yellow-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                          }`}
+                        title="Add private note about this contact"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          {/* Book / notes icon */}
+                          <path
+                            d="M5 3.5A1.5 1.5 0 0 1 6.5 2h7A1.5 1.5 0 0 1 15 3.5v11A1.5 1.5 0 0 1 13.5 16h-7A1.5 1.5 0 0 0 5 17.5"
+                            strokeWidth={1.4}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M7 5.5h5M7 8h4M7 10.5h3"
+                            strokeWidth={1.4}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
+                      <Input
+                        value={isNoteMode ? noteDraft : newMessage}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const value = e.target.value;
+                          if (isNoteMode) {
+                            setNoteDraft(value);
+                            return;
+                          }
 
-                        // Saved replies: detect last '/' and show suggestions based on shortcut/name
-                        const slashIndex = value.lastIndexOf('/');
-                        if (slashIndex >= 0 && !value.slice(slashIndex).includes(' ')) {
-                          const query = value.slice(slashIndex + 1);
-                          setSavedReplyQuery(query);
-                          setShowSavedReplies(true);
-                        } else {
-                          setShowSavedReplies(false);
-                          setSavedReplyQuery('');
+                          setNewMessage(value);
+
+                          // very lightweight @ mention detection: if user types '@' and we have staff, show list
+                          const atIndex = value.lastIndexOf('@');
+                          if (atIndex >= 0) {
+                            const query = value.slice(atIndex + 1).trim();
+                            setMentionQuery(query);
+                            setShowMentionList(true);
+                          } else {
+                            setShowMentionList(false);
+                            setMentionQuery('');
+                          }
+
+                          // Saved replies: detect last '/' and show suggestions based on shortcut/name
+                          const slashIndex = value.lastIndexOf('/');
+                          if (slashIndex >= 0 && !value.slice(slashIndex).includes(' ')) {
+                            const query = value.slice(slashIndex + 1);
+                            setSavedReplyQuery(query);
+                            setShowSavedReplies(true);
+                          } else {
+                            setShowSavedReplies(false);
+                            setSavedReplyQuery('');
+                          }
+                        }}
+                        placeholder={
+                          isNoteMode
+                            ? 'Type a private note about this contact...'
+                            : 'Type a message... Use @ to mention another agent.'
                         }
-                      }}
-                      placeholder={
-                        isNoteMode
-                          ? 'Type a private note about this contact...'
-                          : 'Type a message... Use @ to mention another agent.'
-                      }
-                      className={`flex-1 ${isNoteMode ? 'bg-yellow-50 border-yellow-300 focus:ring-yellow-400' : ''
-                        }`}
-                      disabled={sending || (isInactiveConversation && !isNoteMode)}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={
-                        (isNoteMode ? savingNote || !noteDraft.trim() : sending || !newMessage.trim()) ||
-                        (isInactiveConversation && !isNoteMode)
-                      }
-                    >
-                      {isNoteMode ? (savingNote ? 'Saving...' : 'Save note') : sending ? 'Sending...' : 'Send'}
-                    </Button>
-                  </div>
-                  {showMentionList && !isNoteMode && staff.length > 0 && (
-                    <div className="absolute bottom-14 left-0 w-64 bg-white/90 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-lg z-10 max-h-64 overflow-y-auto">
-                      <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-100">
-                        Invite another agent
-                      </div>
-                      {staff
-                        .filter((agent) => {
-                          if (!mentionQuery) return true;
-                          const q = mentionQuery.toLowerCase();
-                          return (
-                            agent.name.toLowerCase().includes(q) ||
-                            agent.email.toLowerCase().includes(q)
-                          );
-                        })
-                        .map((agent) => (
-                          <button
-                            key={agent.id}
-                            type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex flex-col"
-                            onClick={() => {
-                              const atIndex = newMessage.lastIndexOf('@');
-                              const base = atIndex >= 0 ? newMessage.slice(0, atIndex) : newMessage;
-                              const handle = `@${agent.name}`;
-                              setNewMessage(`${base}${handle} `);
-                              setShowMentionList(false);
-                              setMentionQuery('');
-                            }}
-                          >
-                            <span className="text-gray-900">{agent.name}</span>
-                            <span className="text-xs text-gray-500">{agent.email}</span>
-                          </button>
-                        ))}
+                        className={`flex-1 ${isNoteMode ? 'bg-yellow-50 border-yellow-300 focus:ring-yellow-400' : ''
+                          }`}
+                        disabled={sending || (isInactiveConversation && !isNoteMode)}
+                      />
+                      <Button
+                        type="submit"
+                        disabled={
+                          (isNoteMode ? savingNote || !noteDraft.trim() : sending || !newMessage.trim()) ||
+                          (isInactiveConversation && !isNoteMode)
+                        }
+                      >
+                        {isNoteMode ? (savingNote ? 'Saving...' : 'Save note') : sending ? 'Sending...' : 'Send'}
+                      </Button>
                     </div>
-                  )}
-                  {showSavedReplies && !isNoteMode && savedReplies.length > 0 && (
-                    <div className="absolute bottom-14 left-0 w-80 bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-lg z-20 max-h-64 overflow-y-auto">
-                      <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-100">
-                        Saved replies
+                    {showMentionList && !isNoteMode && staff.length > 0 && (
+                      <div className="absolute bottom-14 left-0 w-64 bg-white/90 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-lg z-10 max-h-64 overflow-y-auto">
+                        <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-100">
+                          Invite another agent
+                        </div>
+                        {staff
+                          .filter((agent) => {
+                            if (!mentionQuery) return true;
+                            const q = mentionQuery.toLowerCase();
+                            return (
+                              agent.name.toLowerCase().includes(q) ||
+                              agent.email.toLowerCase().includes(q)
+                            );
+                          })
+                          .map((agent) => (
+                            <button
+                              key={agent.id}
+                              type="button"
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex flex-col"
+                              onClick={() => {
+                                const atIndex = newMessage.lastIndexOf('@');
+                                const base = atIndex >= 0 ? newMessage.slice(0, atIndex) : newMessage;
+                                const handle = `@${agent.name}`;
+                                setNewMessage(`${base}${handle} `);
+                                setMentionAssigneeId(agent.id);
+                                setShowMentionList(false);
+                                setMentionQuery('');
+                              }}
+                            >
+                              <span className="text-gray-900">{agent.name}</span>
+                              <span className="text-xs text-gray-500">{agent.email}</span>
+                            </button>
+                          ))}
                       </div>
-                      {savedReplies
-                        .filter((reply) => {
-                          if (!savedReplyQuery) return true;
-                          const q = savedReplyQuery.toLowerCase();
-                          const shortcut = reply.shortcut ?? '';
-                          return (
-                            shortcut.toLowerCase().includes(q) ||
-                            reply.name.toLowerCase().includes(q)
-                          );
-                        })
-                        .map((reply) => (
-                          <button
-                            key={reply.id}
-                            type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                            onClick={() => {
-                              const value = newMessage;
-                              const slashIndex = value.lastIndexOf('/');
-                              const base = slashIndex >= 0 ? value.slice(0, slashIndex) : value;
-                              setNewMessage(`${base}${reply.body} `);
-                              setShowSavedReplies(false);
-                              setSavedReplyQuery('');
-                            }}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-gray-900 truncate">
-                                {reply.name}
-                              </span>
-                              {reply.shortcut && (
-                                <span className="ml-2 text-[11px] text-gray-400 truncate">
-                                  {reply.shortcut}
+                    )}
+                    {showSavedReplies && !isNoteMode && savedReplies.length > 0 && (
+                      <div className="absolute bottom-14 left-0 w-80 bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-lg z-20 max-h-64 overflow-y-auto">
+                        <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-100">
+                          Saved replies
+                        </div>
+                        {savedReplies
+                          .filter((reply) => {
+                            if (!savedReplyQuery) return true;
+                            const q = savedReplyQuery.toLowerCase();
+                            const shortcut = reply.shortcut ?? '';
+                            return (
+                              shortcut.toLowerCase().includes(q) ||
+                              reply.name.toLowerCase().includes(q)
+                            );
+                          })
+                          .map((reply) => (
+                            <button
+                              key={reply.id}
+                              type="button"
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                              onClick={() => {
+                                const value = newMessage;
+                                const slashIndex = value.lastIndexOf('/');
+                                const base = slashIndex >= 0 ? value.slice(0, slashIndex) : value;
+                                setNewMessage(`${base}${reply.body} `);
+                                setShowSavedReplies(false);
+                                setSavedReplyQuery('');
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-900 truncate">
+                                  {reply.name}
                                 </span>
-                              )}
-                            </div>
-                            <div className="mt-1 text-xs text-gray-500 line-clamp-2">
-                              {reply.body}
-                            </div>
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </form>
+                                {reply.shortcut && (
+                                  <span className="ml-2 text-[11px] text-gray-400 truncate">
+                                    {reply.shortcut}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="mt-1 text-xs text-gray-500 line-clamp-2">
+                                {reply.body}
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                    )}
+                  </form>
+                )}
               </div>
             </div>
           </div>

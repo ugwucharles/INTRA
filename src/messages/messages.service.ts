@@ -43,11 +43,17 @@ export class MessagesService {
     }
 
     // AGENT can send only on assigned conversations
-    if (
-      currentUser.role === 'AGENT' &&
-      conversation.assignedTo !== currentUser.userId
-    ) {
-      throw new ForbiddenException('You are not assigned to this conversation');
+    const isAssignedToSomeone = !!conversation.assignedTo;
+    const isCurrentAssignee = conversation.assignedTo === currentUser.userId;
+
+    // When a conversation is assigned, only that agent can send messages (no admins).
+    if (isAssignedToSomeone && !isCurrentAssignee) {
+      throw new ForbiddenException('Only the assigned agent can send messages on this conversation');
+    }
+
+    // When unassigned, only admins can talk directly to the customer.
+    if (!isAssignedToSomeone && currentUser.role !== 'ADMIN') {
+      throw new ForbiddenException('Only an admin can send messages on an unassigned conversation');
     }
 
     const message = await this.prisma.message.create({
@@ -58,6 +64,14 @@ export class MessagesService {
         content: dto.content,
       },
     });
+
+    if (conversation.firstResponseTime === null) {
+      const secondsDiff = Math.floor((Date.now() - conversation.createdAt.getTime()) / 1000);
+      await this.prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { firstResponseTime: secondsDiff },
+      });
+    }
 
     // If this conversation is linked to a Meta customer, send the message back to Messenger/Instagram
     try {
@@ -119,12 +133,32 @@ export class MessagesService {
       throw new NotFoundException('Conversation not found in this organization');
     }
 
-    // AGENT can view only their own assigned conversations
-    if (
-      currentUser.role === 'AGENT' &&
-      conversation.assignedTo !== currentUser.userId
-    ) {
-      throw new ForbiddenException('You are not assigned to this conversation');
+    // AGENT read access:
+    // - current assignee can view
+    // - agents who previously participated (sent a staff message or added an internal note) can view read-only
+    if (currentUser.role === 'AGENT' && conversation.assignedTo !== currentUser.userId) {
+      const [hasSentMessage, hasAuthoredNote] = await Promise.all([
+        this.prisma.message.findFirst({
+          where: {
+            conversationId: conversation.id,
+            senderId: currentUser.userId,
+            senderType: SenderType.STAFF,
+          },
+          select: { id: true },
+        }),
+        this.prisma.conversationNote.findFirst({
+          where: {
+            conversationId: conversation.id,
+            orgId: currentUser.orgId,
+            authorId: currentUser.userId,
+          },
+          select: { id: true },
+        }),
+      ]);
+
+      if (!hasSentMessage && !hasAuthoredNote) {
+        throw new ForbiddenException('You do not have access to this conversation');
+      }
     }
 
     // Mark messages as read when listing them

@@ -4,6 +4,8 @@ import { ConversationStatus, SenderType, $Enums, MessageStatus, AutoReplyTrigger
 import { RoutingService, RoutingOutcome } from '../routing/routing.service';
 import { RoutingSettingsService } from '../routing/routing-settings.service';
 import { AutoReplyService } from '../auto-reply/auto-reply.service';
+import { SocketGateway } from '../socket/socket.gateway';
+import { SocialAccountsService } from '../social-accounts/social-accounts.service';
 
 @Injectable()
 export class MetaService {
@@ -14,6 +16,8 @@ export class MetaService {
     private readonly routingService: RoutingService,
     private readonly routingSettingsService: RoutingSettingsService,
     private readonly autoReplyService: AutoReplyService,
+    private readonly socketGateway: SocketGateway,
+    private readonly socialAccounts: SocialAccountsService,
   ) {}
 
   async handleWebhook(body: any) {
@@ -30,17 +34,24 @@ export class MetaService {
       return;
     }
 
-    const orgId = process.env.META_DEFAULT_ORG_ID;
-    if (!orgId) {
-      this.logger.error('META_DEFAULT_ORG_ID is not set; cannot route messages');
-      return;
-    }
-
     for (const entry of body.entry) {
       // WhatsApp Business Account webhook: entry.changes[].value holds {contacts, messages}
       if (body.object === 'whatsapp_business_account' && Array.isArray(entry.changes)) {
         for (const change of entry.changes) {
           if (change.field === 'messages' && change.value) {
+            // Resolve org by the phone number ID embedded in the value metadata
+            const phoneNumberId: string | undefined = change.value?.metadata?.phone_number_id;
+            let orgId: string | null = null;
+            if (phoneNumberId) {
+              const creds = await this.socialAccounts.findOrgByPhoneNumberId(phoneNumberId);
+              orgId = creds?.orgId ?? null;
+            }
+            if (!orgId) {
+              this.logger.warn(
+                `No active WhatsApp SocialAccount for phone_number_id=${phoneNumberId ?? 'unknown'}; skipping`,
+              );
+              continue;
+            }
             try {
               await this.handleWhatsAppWebhookValue(orgId, change.value);
             } catch (err) {
@@ -48,6 +59,20 @@ export class MetaService {
             }
           }
         }
+        continue;
+      }
+
+      // Resolve org from pageId for Messenger/Instagram
+      const pageId: string | undefined = entry.id;
+      let orgId: string | null = null;
+      if (pageId) {
+        const creds = await this.socialAccounts.findOrgByPageId(pageId);
+        orgId = creds?.orgId ?? null;
+      }
+      if (!orgId) {
+        this.logger.warn(
+          `No active SocialAccount for pageId=${pageId ?? 'unknown'}; skipping entry`,
+        );
         continue;
       }
 
@@ -66,8 +91,6 @@ export class MetaService {
       }
 
       if (!Array.isArray(messagingEvents) || messagingEvents.length === 0) continue;
-
-      const pageId: string | undefined = entry.id;
 
       for (const event of messagingEvents) {
         try {
@@ -229,8 +252,9 @@ export class MetaService {
   /**
    * Fetch the display name for a Facebook Messenger user (PSID) via Graph API.
    */
-  private async fetchMessengerName(psid: string): Promise<string | null> {
-    const accessToken = process.env.META_PAGE_ACCESS_TOKEN;
+  private async fetchMessengerName(orgId: string, psid: string): Promise<string | null> {
+    const creds = await this.socialAccounts.findCredentials(orgId, $Enums.Channel.FACEBOOK_MESSENGER);
+    const accessToken = creds?.accessToken;
     if (!accessToken) {
       return null;
     }
@@ -260,15 +284,13 @@ export class MetaService {
 
   /**
    * Fetch the display name/username for an Instagram sender via Graph API.
-   * We try META_PAGE_ACCESS_TOKEN first, falling back to INSTAGRAM_ACCESS_TOKEN if present.
    */
-  private async fetchInstagramName(igSenderId: string): Promise<string | null> {
-    // Prefer a dedicated Instagram token when available, fall back to page token.
-    const accessToken =
-      process.env.INSTAGRAM_ACCESS_TOKEN ?? process.env.META_PAGE_ACCESS_TOKEN;
+  private async fetchInstagramName(orgId: string, igSenderId: string): Promise<string | null> {
+    const creds = await this.socialAccounts.findCredentials(orgId, $Enums.Channel.INSTAGRAM);
+    const accessToken = creds?.accessToken;
     if (!accessToken) {
       this.logger.warn(
-        'No Instagram access token configured; cannot fetch Instagram profile name',
+        `No Instagram access token configured for org ${orgId}; cannot fetch Instagram profile name`,
       );
       return null;
     }
@@ -332,9 +354,13 @@ export class MetaService {
       return;
     }
 
-    const pageAccessToken = process.env.META_PAGE_ACCESS_TOKEN;
+    const channel = customer.source === $Enums.Channel.INSTAGRAM
+      ? $Enums.Channel.INSTAGRAM
+      : $Enums.Channel.FACEBOOK_MESSENGER;
+    const creds = await this.socialAccounts.findCredentials(orgId, channel);
+    const pageAccessToken = creds?.accessToken;
     if (!pageAccessToken) {
-      this.logger.error('META_PAGE_ACCESS_TOKEN is not set; cannot send outbound messages');
+      this.logger.error(`No ${channel} access token for org ${orgId}; cannot send outbound messages`);
       return;
     }
 
@@ -379,12 +405,13 @@ export class MetaService {
     toWaId: string,
     text: string,
   ): Promise<void> {
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN ?? process.env.META_PAGE_ACCESS_TOKEN;
+    const waCreds = await this.socialAccounts.findCredentials(orgId, $Enums.Channel.WHATSAPP);
+    const phoneNumberId = waCreds?.phoneNumberId;
+    const accessToken = waCreds?.accessToken;
 
     if (!phoneNumberId || !accessToken) {
       this.logger.error(
-        'WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN is not set; cannot send WhatsApp message',
+        `WhatsApp credentials not configured for org ${orgId}; cannot send WhatsApp message`,
       );
       return;
     }
@@ -553,6 +580,12 @@ export class MetaService {
         }),
       );
 
+      this.socketGateway.emitToOrg(orgId, 'conversation_updated', {
+        conversationId: conversation.id,
+        lastMessage: text,
+      });
+      this.socketGateway.emitToConversation(conversation.id, 'new_message', message);
+
       // If this conversation is awaiting a customer rating, process it now
       if (isAwaitingRating) {
         await this.processRatingReply(orgId, conversation.id, conversation.resolvedBy, text);
@@ -689,9 +722,9 @@ export class MetaService {
     // Best-effort fetch of the social profile name so CRM shows real names.
     let displayName: string | null = null;
     if (channel === $Enums.Channel.FACEBOOK_MESSENGER) {
-      displayName = await this.fetchMessengerName(senderId);
+      displayName = await this.fetchMessengerName(orgId, senderId);
     } else if (channel === $Enums.Channel.INSTAGRAM) {
-      displayName = await this.fetchInstagramName(senderId);
+      displayName = await this.fetchInstagramName(orgId, senderId);
     }
 
     // Upsert customer based on (orgId, source, externalId). We still store pageId but
@@ -803,6 +836,12 @@ export class MetaService {
         createdAt: message.createdAt.toISOString(),
       }),
     );
+
+    this.socketGateway.emitToOrg(orgId, 'conversation_updated', {
+      conversationId: conversation.id,
+      lastMessage: text,
+    });
+    this.socketGateway.emitToConversation(conversation.id, 'new_message', message);
 
     // If this conversation is awaiting a customer rating, process it and skip auto-replies
     if (isAwaitingRating) {

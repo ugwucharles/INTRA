@@ -15,6 +15,7 @@ import { TagsModule } from './tags/tags.module';
 import { SavedRepliesModule } from './saved-replies/saved-replies.module';
 import { EmailModule } from './email/email.module';
 import { SocketModule } from './socket/socket.module';
+import { SocialAccountsModule } from './social-accounts/social-accounts.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SocketModule } from './socket/socket.module';
     SavedRepliesModule,
     EmailModule,
     SocketModule,
+    SocialAccountsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

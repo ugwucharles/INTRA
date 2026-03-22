@@ -11,6 +11,10 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
+    } else if (!loading && user && !user.orgOnboarded) {
+      if (window.location.pathname !== '/dashboard/onboarding') {
+        router.push('/dashboard/onboarding');
+      }
     }
   }, [user, loading, router]);
 
