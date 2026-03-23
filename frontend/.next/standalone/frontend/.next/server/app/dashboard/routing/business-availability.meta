@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/dashboard/layout,_N_T_/dashboard/routing/layout,_N_T_/dashboard/routing/business-availability/layout,_N_T_/dashboard/routing/business-availability/page,_N_T_/dashboard/routing/business-availability"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/dashboard/routing/business-availability/__PAGE__",
+    "/dashboard/routing/business-availability",
+    "/dashboard/routing",
+    "/dashboard",
+    "/_index",
+    "/_head"
+  ]
+}
