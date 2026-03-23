@@ -3,11 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Organization {
-  id                String             @id @default(uuid()) @db.Uuid
+  id                String             @id @default(uuid())
   name              String
   country           String?
   phone             String?
@@ -30,7 +31,7 @@ model Organization {
 
 model SocialAccount {
   id            String   @id @default(cuid())
-  orgId         String   @db.Uuid
+  orgId         String  
   channel       Channel
   displayName   String?
   pageId        String?
@@ -48,7 +49,7 @@ model SocialAccount {
 
 model Department {
   id            String         @id @default(cuid())
-  orgId         String         @db.Uuid
+  orgId         String        
   name          String
   isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
@@ -61,8 +62,8 @@ model Department {
 }
 
 model User {
-  id                    String             @id @default(uuid()) @db.Uuid
-  orgId                 String             @db.Uuid
+  id                    String             @id @default(uuid())
+  orgId                 String            
   name                  String
   email                 String
   password              String
@@ -86,7 +87,7 @@ model User {
 
 model Customer {
   id            String         @id @default(cuid())
-  orgId         String         @db.Uuid
+  orgId         String        
   name          String?
   email         String?
   phone         String?
@@ -105,9 +106,9 @@ model Customer {
 
 model Conversation {
   id                  String             @id @default(cuid())
-  orgId               String             @db.Uuid
+  orgId               String            
   customerId          String
-  assignedTo          String?            @db.Uuid
+  assignedTo          String?           
   status              ConversationStatus @default(OPEN)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
@@ -118,7 +119,7 @@ model Conversation {
   firstResponseTime   Int?
   isStarred           Boolean            @default(false)
   awaitingRating      Boolean            @default(false)
-  resolvedBy          String?            @db.Uuid
+  resolvedBy          String?           
   customerRating      Int?
   assignee            User?              @relation(fields: [assignedTo], references: [id])
   customer            Customer           @relation(fields: [customerId], references: [id])
@@ -146,8 +147,8 @@ model Message {
 
 model AuditLog {
   id         String       @id @default(cuid())
-  orgId      String       @db.Uuid
-  userId     String       @db.Uuid
+  orgId      String      
+  userId     String      
   action     AuditAction
   targetId   String
   targetType String
@@ -157,9 +158,9 @@ model AuditLog {
 
 model CustomerNote {
   id         String       @id @default(cuid())
-  orgId      String       @db.Uuid
+  orgId      String      
   customerId String
-  userId     String       @db.Uuid
+  userId     String      
   content    String
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
@@ -172,7 +173,7 @@ model CustomerNote {
 
 model RoutingSettings {
   id                 String           @id @default(cuid())
-  orgId              String           @unique @db.Uuid
+  orgId              String           @unique
   autoRoutingEnabled Boolean          @default(true)
   routeTo            RouteTo          @default(LIVE_AGENTS_ONLY)
   fallbackBehavior   FallbackBehavior @default(ASSIGN_ADMIN)
@@ -183,7 +184,7 @@ model RoutingSettings {
 
 model AutoReply {
   id           String           @id @default(cuid())
-  orgId        String           @db.Uuid
+  orgId        String          
   trigger      AutoReplyTrigger
   departmentId String?
   message      String
@@ -197,7 +198,7 @@ model AutoReply {
 
 model Tag {
   id               String            @id @default(cuid())
-  orgId            String            @db.Uuid
+  orgId            String           
   name             String
   type             TagType
   color            String?
@@ -228,9 +229,9 @@ model CustomerTag {
 
 model ConversationNote {
   id             String       @id @default(cuid())
-  orgId          String       @db.Uuid
+  orgId          String      
   conversationId String
-  authorId       String       @db.Uuid
+  authorId       String      
   content        String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -241,7 +242,7 @@ model ConversationNote {
 
 model SavedReply {
   id           String       @id @default(cuid())
-  orgId        String       @db.Uuid
+  orgId        String      
   departmentId String?
   name         String
   shortcut     String?
