@@ -205,9 +205,13 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async loadLastProcessedUID(): Promise<number> {
-    const orgId = process.env.META_DEFAULT_ORG_ID;
-    if (!orgId) return 0;
     try {
+      // For multitenancy, we should ideally resolve this via the recipient email.
+      // For now, we fetch the first organization until per-org IMAP is implemented.
+      const org = await this.prisma.organization.findFirst();
+      if (!org) return 0;
+      const orgId = org.id;
+
       const latest = await this.prisma.message.findFirst({
         where: {
           senderType: SenderType.CUSTOMER,
@@ -245,11 +249,13 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
 
       this.logger.log(`Parsed email from: ${fromAddress} Subject: ${subject}`);
 
-      const orgId = process.env.META_DEFAULT_ORG_ID; // Borrowing default org ID config
-      if (!orgId) {
-        this.logger.warn('No orgId configured for incoming emails');
+      // For multitenancy, we resolve the organization dynamically.
+      const org = await this.prisma.organization.findFirst();
+      if (!org) {
+        this.logger.warn('No organization found in database for incoming email');
         return;
       }
+      const orgId = org.id;
 
       // 1. Find or create customer
       let customer = await this.prisma.customer.findFirst({

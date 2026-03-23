@@ -6,10 +6,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Temporarily ignore for development
   },
-  devIndicators: {
-    buildActivity: false,
-    appIsrStatus: false,
-  },
   images: {
     remotePatterns: [
       {
@@ -22,6 +18,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  output: 'standalone',
 };
 
 export default nextConfig;

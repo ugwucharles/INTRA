@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -19,6 +21,8 @@ import { SocialAccountsModule } from './social-accounts/social-accounts.module';
 
 @Module({
   imports: [
+    // Rate limiting — max 60 requests per minute per IP globally
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
     PrismaModule,
     AuthModule,
     StaffModule,
@@ -35,6 +39,11 @@ import { SocialAccountsModule } from './social-accounts/social-accounts.module';
     SocialAccountsModule,
   ],
   controllers: [AppController, HealthController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Apply rate limiting globally to every endpoint
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}
+

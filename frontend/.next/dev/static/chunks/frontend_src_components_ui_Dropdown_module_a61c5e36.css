@@ -1,0 +1,174 @@
+/* [project]/frontend/src/components/ui/Dropdown.module.css [app-client] (css) */
+.Dropdown-module__4LBYPG__menu {
+  color: #000;
+  width: fit-content;
+  font-size: 16px;
+  line-height: 1.6;
+  list-style: none;
+  display: flex;
+  position: relative;
+}
+
+.Dropdown-module__4LBYPG__menu a, .Dropdown-module__4LBYPG__menu button {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+}
+
+.Dropdown-module__4LBYPG__link {
+  background: #f3f4f6;
+  border-radius: 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-width: 160px;
+  padding: 12px 36px;
+  transition: all .48s cubic-bezier(.23, 1, .32, 1);
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.Dropdown-module__4LBYPG__item:hover .Dropdown-module__4LBYPG__link, .Dropdown-module__4LBYPG__item.Dropdown-module__4LBYPG__open .Dropdown-module__4LBYPG__link {
+  color: #fff;
+  border-radius: 16px 16px 0 0;
+}
+
+.Dropdown-module__4LBYPG__link:after {
+  content: "";
+  z-index: 0;
+  transform-origin: 0;
+  background-color: #000;
+  width: 100%;
+  height: 100%;
+  transition: transform .48s cubic-bezier(.23, 1, .32, 1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scaleX(0);
+}
+
+.Dropdown-module__4LBYPG__link span, .Dropdown-module__4LBYPG__link svg {
+  z-index: 1;
+  position: relative;
+}
+
+.Dropdown-module__4LBYPG__item:hover .Dropdown-module__4LBYPG__link:after, .Dropdown-module__4LBYPG__item.Dropdown-module__4LBYPG__open .Dropdown-module__4LBYPG__link:after {
+  transform-origin: 100%;
+  transform: scaleX(1);
+}
+
+.Dropdown-module__4LBYPG__link svg {
+  fill: #000;
+  width: 14px;
+  height: 14px;
+  transition: all .48s cubic-bezier(.23, 1, .32, 1);
+}
+
+.Dropdown-module__4LBYPG__item:hover .Dropdown-module__4LBYPG__link svg, .Dropdown-module__4LBYPG__item.Dropdown-module__4LBYPG__open .Dropdown-module__4LBYPG__link svg {
+  fill: #fff;
+  transform: rotate(-180deg);
+}
+
+.Dropdown-module__4LBYPG__item {
+  position: relative;
+}
+
+.Dropdown-module__4LBYPG__submenu {
+  opacity: 0;
+  visibility: hidden;
+  z-index: 50;
+  pointer-events: none;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  list-style: none;
+  transition: all .48s cubic-bezier(.23, 1, .32, 1);
+  display: flex;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  overflow: hidden;
+  transform: translateY(-12px);
+  box-shadow: 0 10px 15px -3px #0000001a;
+}
+
+.Dropdown-module__4LBYPG__item:hover .Dropdown-module__4LBYPG__submenu, .Dropdown-module__4LBYPG__item.Dropdown-module__4LBYPG__open .Dropdown-module__4LBYPG__submenu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  border-color: #000;
+  transform: translateY(0);
+}
+
+.Dropdown-module__4LBYPG__submenuItem {
+  width: 100%;
+  transition: all .48s cubic-bezier(.23, 1, .32, 1);
+}
+
+.Dropdown-module__4LBYPG__submenuLink {
+  text-align: center;
+  color: #374151;
+  background: #fff;
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 14px;
+  transition: all .48s cubic-bezier(.23, 1, .32, 1);
+  display: block;
+  position: relative;
+}
+
+.Dropdown-module__4LBYPG__submenuItem:last-child .Dropdown-module__4LBYPG__submenuLink {
+  border-bottom: none;
+}
+
+.Dropdown-module__4LBYPG__submenuLink:before {
+  content: "";
+  z-index: 0;
+  transform-origin: 0;
+  background-color: #000;
+  width: 100%;
+  height: 100%;
+  transition: transform .48s cubic-bezier(.23, 1, .32, 1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scaleX(0);
+}
+
+.Dropdown-module__4LBYPG__submenuLink:hover:before {
+  transform-origin: 100%;
+  transform: scaleX(1);
+}
+
+.Dropdown-module__4LBYPG__submenuLink span {
+  z-index: 1;
+  position: relative;
+}
+
+.Dropdown-module__4LBYPG__submenuLink:hover {
+  color: #fff;
+}
+
+.Dropdown-module__4LBYPG__submenuLink.Dropdown-module__4LBYPG__active {
+  color: #fff;
+  background-color: #000;
+  font-weight: 600;
+}
+
+.Dropdown-module__4LBYPG__submenuLink.Dropdown-module__4LBYPG__active:hover {
+  color: #fff;
+}
+
+/*# sourceMappingURL=frontend_src_components_ui_Dropdown_module_a61c5e36.css.map*/

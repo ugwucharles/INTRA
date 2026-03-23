@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 22, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/bando/Desktop/INTRA/frontend/src/app/dashboard/routing/page.tsx"],"sourcesContent":["import { redirect } from 'next/navigation';\r\n\r\nexport default function RoutingIndexPage() {\r\n  redirect('/dashboard/routing/rules');\r\n}\r\n"],"names":[],"mappings":";;;;AAAA;AAAA;;AAEe,SAAS;IACtB,IAAA,6MAAQ,EAAC;AACX"}}]
+}
