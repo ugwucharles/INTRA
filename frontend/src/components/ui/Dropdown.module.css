@@ -1,6 +1,6 @@
 /* From Uiverse.io by gharsh11032000 */
 .menu {
-  font-size: 16px;
+  font-size: 13px;
   line-height: 1.6;
   color: #000000;
   width: fit-content;
@@ -29,14 +29,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 12px 36px;
+  gap: 8px;
+  padding: 8px 14px;
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.48s cubic-bezier(0.23, 1, 0.32, 1);
   background: #f3f4f6;
   /* Added a subtle background so it's visible by default */
-  min-width: 160px;
+  min-width: 96px;
   /* Ensure consistent width for dropdowns */
 }
 
@@ -76,8 +76,8 @@
 }
 
 .link svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   fill: #000000;
   transition: all 0.48s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -100,7 +100,9 @@
   top: 100%;
   border-radius: 0 0 16px 16px;
   left: 0;
-  width: 100%;
+  min-width: 100%;
+  width: max-content;
+  max-width: 85vw;
   overflow: hidden;
   border: 1px solid #cccccc;
   border-top: none;
@@ -115,6 +117,11 @@
   pointer-events: none;
   list-style: none;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.submenuRight {
+  left: auto;
+  right: 0;
 }
 
 .item:hover .submenu,
@@ -133,14 +140,14 @@
 
 .submenuLink {
   display: block;
-  padding: 12px 24px;
+  padding: 10px 12px;
   width: 100%;
   position: relative;
   text-align: center;
   transition: all 0.48s cubic-bezier(0.23, 1, 0.32, 1);
   background: white;
   color: #374151;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .submenuItem:last-child .submenuLink {
@@ -184,4 +191,17 @@
 
 .submenuLink.active:hover {
   color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .hideValueOnMobile .link span {
+    display: none;
+  }
+
+  .hideValueOnMobile .link {
+    min-width: 34px;
+    padding-left: 8px;
+    padding-right: 8px;
+    justify-content: center;
+  }
 }

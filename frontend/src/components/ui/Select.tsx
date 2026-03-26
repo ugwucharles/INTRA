@@ -9,6 +9,8 @@ interface SelectProps {
   disabled?: boolean;
   className?: string;
   label?: string;
+  hideValueOnMobile?: boolean;
+  align?: 'left' | 'right';
 }
 
 export function Select({
@@ -19,6 +21,8 @@ export function Select({
   disabled = false,
   className = '',
   label,
+  hideValueOnMobile = false,
+  align = 'left',
 }: SelectProps) {
   const dropdownOptions: DropdownOption[] = options.map((opt) => ({
     value: opt.value,
@@ -38,6 +42,8 @@ export function Select({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
+        hideValueOnMobile={hideValueOnMobile}
+        align={align}
       />
     </div>
   );

@@ -21,6 +21,7 @@ interface DropdownProps {
   trigger?: React.ReactNode;
   theme?: 'dark' | 'light';
   label?: string; // Optional label for the button
+  hideValueOnMobile?: boolean;
 }
 
 export function Dropdown({
@@ -30,6 +31,8 @@ export function Dropdown({
   placeholder = 'Select...',
   disabled = false,
   className = '',
+  hideValueOnMobile = false,
+  align = 'left',
 }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -57,7 +60,7 @@ export function Dropdown({
 
   return (
     <div
-      className={`${styles.menu} ${className}`}
+      className={`${styles.menu} ${hideValueOnMobile ? styles.hideValueOnMobile : ''} ${className}`}
       ref={containerRef}
       onMouseEnter={() => !disabled && setOpen(true)}
       onMouseLeave={() => setOpen(false)}
@@ -77,7 +80,7 @@ export function Dropdown({
           </svg>
         </button>
 
-        <div className={styles.submenu}>
+        <div className={`${styles.submenu} ${align === 'right' ? styles.submenuRight : ''}`}>
           {options.map((option) => (
             <div key={option.value} className={styles.submenuItem}>
               <button

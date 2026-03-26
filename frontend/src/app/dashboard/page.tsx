@@ -265,27 +265,26 @@ export default function ConversationsPage() {
       <DashboardLayout>
         <div className="h-full flex flex-col bg-white overflow-hidden">
           {/* Stats Cards */}
-          <div className="px-6 py-5 border-b border-gray-100">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100">
             <div className="grid grid-cols-3 gap-4">
               {/* Total Conversations */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500">Total Conversations</span>
+              <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-5">
+                <div className="flex items-center justify-center">
+                  <span className="text-xs sm:text-sm font-medium text-gray-500 text-center">Total Conversations</span>
                 </div>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-3xl font-semibold text-gray-900">{conversations.length}</span>
-                  <span className="text-xs text-gray-400 font-medium ml-1">Total volume</span>
+                <div className="mt-1 sm:mt-2 flex items-baseline justify-center gap-2">
+                  <span className="text-2xl sm:text-3xl font-semibold text-gray-900">{conversations.length}</span>
                 </div>
               </div>
 
               {/* Staff */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500">Staff</span>
+              <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-5">
+                <div className="flex items-center justify-center">
+                  <span className="text-xs sm:text-sm font-medium text-gray-500">Staff</span>
                 </div>
-                <div className="mt-2 flex items-center gap-3">
-                  <span className="text-3xl font-semibold text-gray-900">{staffInfo.agents}</span>
-                  <div className="flex -space-x-2">
+                <div className="mt-1 sm:mt-2 flex items-center justify-center gap-3">
+                  <span className="text-2xl sm:text-3xl font-semibold text-gray-900">{staffInfo.agents}</span>
+                  <div className="hidden sm:flex -space-x-2">
                     {staffInfo.agentsList.slice(0, 3).map((agent, i) => (
                       <div key={agent.id} className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white overflow-hidden flex items-center justify-center">
                         {agent.profilePicture ? (
@@ -305,13 +304,13 @@ export default function ConversationsPage() {
               </div>
 
               {/* Active Now */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500">Active Now</span>
+              <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-5">
+                <div className="flex items-center justify-center">
+                  <span className="text-xs sm:text-sm font-medium text-gray-500">Active Now</span>
                 </div>
-                <div className="mt-2 flex items-center gap-3">
-                  <span className="text-3xl font-semibold text-gray-900">{staffInfo.active}</span>
-                  <div className="flex -space-x-2">
+                <div className="mt-1 sm:mt-2 flex items-center justify-center gap-3">
+                  <span className="text-2xl sm:text-3xl font-semibold text-gray-900">{staffInfo.active}</span>
+                  <div className="hidden sm:flex -space-x-2">
                     {staffInfo.activeList.map((agent, i) => (
                       <div key={agent.id || i} className="w-8 h-8 rounded-full bg-blue-100 border-2 border-white overflow-hidden flex items-center justify-center relative group">
                         {agent.profilePicture ? (
@@ -339,12 +338,13 @@ export default function ConversationsPage() {
             )}
 
             {/* Filters */}
-            <div className="mb-6 flex flex-wrap items-center gap-3 text-sm ios-appear">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 font-medium">Status:</span>
+            <div className="mb-6 grid grid-cols-3 gap-2 text-xs ios-appear filters-compact-mobile">
+              <div className="flex items-center gap-1 min-w-0">
+                <span className="text-gray-600 font-medium whitespace-nowrap">Status:</span>
                 <Select
                   value={statusFilter}
                   onChange={(value) => setStatusFilter(value as any)}
+                  hideValueOnMobile
                   options={[
                     { value: 'ALL', label: 'All' },
                     { value: 'OPEN', label: 'Open' },
@@ -352,32 +352,35 @@ export default function ConversationsPage() {
                     { value: 'RESOLVED', label: 'Resolved' },
                     { value: 'CLOSED', label: 'Closed' },
                   ]}
-                  className="w-auto min-w-[120px]"
+                  className="w-full min-w-0"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 font-medium">Assignment:</span>
+              <div className="flex items-center gap-1 min-w-0">
+                <span className="text-gray-600 font-medium whitespace-nowrap">Assignment:</span>
                 <Select
                   value={assignmentFilter}
                   onChange={(value) => setAssignmentFilter(value as any)}
+                  hideValueOnMobile
                   options={[
                     { value: 'ALL', label: 'All' },
                     { value: 'UNASSIGNED', label: 'Unassigned' },
                     { value: 'ASSIGNED', label: 'Assigned' },
                   ]}
-                  className="w-auto min-w-[140px]"
+                  className="w-full min-w-0"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 font-medium">Department:</span>
+              <div className="flex items-center gap-1 min-w-0">
+                <span className="text-gray-600 font-medium whitespace-nowrap">Department:</span>
                 <Select
                   value={departmentFilter}
                   onChange={(value) => setDepartmentFilter(value as any)}
+                  hideValueOnMobile
+                  align="right"
                   options={[
                     { value: 'ALL', label: 'All' },
                     ...departments.map((d) => ({ value: d.id, label: d.name })),
                   ]}
-                  className="w-auto min-w-[160px]"
+                  className="w-full min-w-0"
                 />
               </div>
             </div>
