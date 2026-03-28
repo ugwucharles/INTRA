@@ -86,6 +86,12 @@ const bottomNavigation: NavItem[] = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const handleNavIconClick = (e: React.MouseEvent) => {
+    if (!sidebarCollapsed) return;
+    e.preventDefault();
+    setSidebarCollapsed(false);
+  };
 
   const isActiveRoute = (href: string) => {
     if (href === '/dashboard') {
@@ -97,12 +103,34 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-[#F5F5F5]">
       {/* Sidebar */}
-      <aside className="w-60 bg-white border-r border-gray-200 flex flex-col">
+      <aside
+        className={`h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-200 ${
+          sidebarCollapsed ? 'w-20' : 'w-60'
+        }`}
+      >
         {/* Logo */}
-        <div className="h-16 px-5 flex items-center border-b border-gray-100">
+        <div className={`h-16 border-b border-gray-100 flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
           <Link href="/dashboard" className="flex items-center">
-            <Image src="/intra.logo.1.png" alt="Logo" width={140} height={40} className="h-8 w-auto" />
+            <Image
+              src="/intra.logo.1.png"
+              alt="Logo"
+              width={140}
+              height={40}
+              className={`${sidebarCollapsed ? 'h-6 w-6 object-contain' : 'h-8 w-auto'} mix-blend-multiply opacity-95`}
+            />
           </Link>
+          {!sidebarCollapsed && (
+            <button
+              type="button"
+              aria-label="Collapse sidebar"
+              onClick={() => setSidebarCollapsed(true)}
+              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:bg-gray-100"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Main Navigation */}
@@ -114,8 +142,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={handleNavIconClick}
                   className={`
-                    flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium
+                    flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-lg text-sm font-medium
                     transition-colors duration-150
                     ${isActive
                       ? 'bg-gray-100 text-gray-900'
@@ -123,13 +152,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     }
                   `}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
                     <span className={isActive ? 'text-gray-900' : 'text-gray-400'}>
                       {item.icon}
                     </span>
-                    <span>{item.name}</span>
+                    {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
-                  {item.badge && (
+                  {!sidebarCollapsed && item.badge && (
                     <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
                       {item.badge}
                     </span>
@@ -149,8 +178,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={handleNavIconClick}
                   className={`
-                    flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium
+                    flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-lg text-sm font-medium
                     transition-colors duration-150
                     ${isActive
                       ? 'bg-gray-100 text-gray-900'
@@ -158,13 +188,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     }
                   `}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
                     <span className={isActive ? 'text-gray-900' : 'text-gray-400'}>
                       {item.icon}
                     </span>
-                    <span>{item.name}</span>
+                    {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
-                  {item.badge && (
+                  {!sidebarCollapsed && item.badge && (
                     <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
                       {item.badge}
                     </span>
@@ -178,21 +208,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 logout();
                 window.location.href = '/login';
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors duration-150"
+              className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors duration-150`}
             >
               <span className="text-red-500">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
               </span>
-              <span>Logout</span>
+              {!sidebarCollapsed && <span>Logout</span>}
             </button>
           </div>
         </div>
 
         {/* User Profile */}
         <div className="px-3 py-4 border-t border-gray-100">
-          <div className="flex items-center gap-3 px-2">
+          <div className={`flex items-center px-2 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
               {user?.profilePicture ? (
                 <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
@@ -209,19 +239,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 )}
               </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">
-                {user?.name || 'User'}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {user?.email || '@user'}
-              </p>
-            </div>
-            <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-              </svg>
-            </button>
+            {!sidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate">
+                  {user?.name || 'User'}
+                </p>
+                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-tight truncate">
+                  {(user?.orgName && user.orgName.trim() !== '') ? user.orgName : 'No Organization'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </aside>

@@ -45,6 +45,7 @@ export class StaffService {
     const staff = await this.prisma.user.findMany({
       where: {
         orgId: currentUser.orgId,
+        role: { not: UserRole.ADMIN },
       },
       orderBy: { createdAt: 'asc' },
       include: {

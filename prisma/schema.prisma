@@ -3,24 +3,27 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 model Organization {
   id                String             @id @default(uuid())
   name              String
-  country           String?
-  phone             String?
-  address           String?
-  isOnboarded       Boolean            @default(false)
   createdAt         DateTime           @default(now())
+  address           String?
+  country           String?
+  isOnboarded       Boolean            @default(false)
+  phone             String?
   auditLogs         AuditLog[]
   autoReplies       AutoReply[]
   conversations     Conversation[]
   conversationNotes ConversationNote[]
+  conversationTags  ConversationTag[]
   customers         Customer[]
   customerNotes     CustomerNote[]
+  customerTags      CustomerTag[]
   departments       Department[]
+  messages          Message[]
   routingSettings   RoutingSettings?
   savedReplies      SavedReply[]
   socialAccounts    SocialAccount[]
@@ -29,17 +32,17 @@ model Organization {
 }
 
 model SocialAccount {
-  id            String   @id @default(cuid())
-  orgId         String  
+  id            String       @id @default(cuid())
+  orgId         String
   channel       Channel
   displayName   String?
   pageId        String?
   accessToken   String
   appSecret     String?
   phoneNumberId String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   org           Organization @relation(fields: [orgId], references: [id])
 
   @@unique([orgId, channel])
@@ -48,7 +51,7 @@ model SocialAccount {
 
 model Department {
   id            String         @id @default(cuid())
-  orgId         String        
+  orgId         String
   name          String
   isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
@@ -62,7 +65,7 @@ model Department {
 
 model User {
   id                    String             @id @default(uuid())
-  orgId                 String            
+  orgId                 String
   name                  String
   email                 String
   password              String
@@ -73,8 +76,8 @@ model User {
   level                 String?
   profilePicture        String?
   title                 String?
-  ratingTotal           Float              @default(0)
   ratingCount           Int                @default(0)
+  ratingTotal           Float              @default(0)
   assignedConversations Conversation[]
   conversationNotes     ConversationNote[]
   customerNotes         CustomerNote[]
@@ -86,7 +89,7 @@ model User {
 
 model Customer {
   id            String         @id @default(cuid())
-  orgId         String        
+  orgId         String
   name          String?
   email         String?
   phone         String?
@@ -105,9 +108,9 @@ model Customer {
 
 model Conversation {
   id                  String             @id @default(cuid())
-  orgId               String            
+  orgId               String
   customerId          String
-  assignedTo          String?           
+  assignedTo          String?
   status              ConversationStatus @default(OPEN)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
@@ -115,11 +118,11 @@ model Conversation {
   departmentId        String?
   routingQuestionSent Boolean            @default(false)
   routingMetadata     Json?
-  firstResponseTime   Int?
   isStarred           Boolean            @default(false)
   awaitingRating      Boolean            @default(false)
-  resolvedBy          String?           
   customerRating      Int?
+  resolvedBy          String?
+  firstResponseTime   Int?
   assignee            User?              @relation(fields: [assignedTo], references: [id])
   customer            Customer           @relation(fields: [customerId], references: [id])
   department          Department?        @relation(fields: [departmentId], references: [id])
@@ -131,6 +134,7 @@ model Conversation {
 
 model Message {
   id             String        @id @default(cuid())
+  orgId          String
   conversationId String
   senderType     SenderType
   senderId       String?
@@ -140,14 +144,17 @@ model Message {
   retryCount     Int           @default(0)
   status         MessageStatus @default(SENT)
   conversation   Conversation  @relation(fields: [conversationId], references: [id])
+  org            Organization  @relation(fields: [orgId], references: [id])
 
   @@unique([conversationId, externalId])
+  @@index([orgId])
+  @@index([conversationId, orgId])
 }
 
 model AuditLog {
   id         String       @id @default(cuid())
-  orgId      String      
-  userId     String      
+  orgId      String
+  userId     String
   action     AuditAction
   targetId   String
   targetType String
@@ -157,9 +164,9 @@ model AuditLog {
 
 model CustomerNote {
   id         String       @id @default(cuid())
-  orgId      String      
+  orgId      String
   customerId String
-  userId     String      
+  userId     String
   content    String
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
@@ -183,7 +190,7 @@ model RoutingSettings {
 
 model AutoReply {
   id           String           @id @default(cuid())
-  orgId        String          
+  orgId        String
   trigger      AutoReplyTrigger
   departmentId String?
   message      String
@@ -197,7 +204,7 @@ model AutoReply {
 
 model Tag {
   id               String            @id @default(cuid())
-  orgId            String           
+  orgId            String
   name             String
   type             TagType
   color            String?
@@ -209,28 +216,34 @@ model Tag {
 }
 
 model ConversationTag {
+  orgId          String
   conversationId String
   tagId          String
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   tag            Tag          @relation(fields: [tagId], references: [id])
+  org            Organization @relation(fields: [orgId], references: [id])
 
   @@id([conversationId, tagId])
+  @@index([orgId])
 }
 
 model CustomerTag {
+  orgId      String
   customerId String
   tagId      String
   customer   Customer @relation(fields: [customerId], references: [id])
   tag        Tag      @relation(fields: [tagId], references: [id])
+  org        Organization @relation(fields: [orgId], references: [id])
 
   @@id([customerId, tagId])
+  @@index([orgId])
 }
 
 model ConversationNote {
   id             String       @id @default(cuid())
-  orgId          String      
+  orgId          String
   conversationId String
-  authorId       String      
+  authorId       String
   content        String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -241,7 +254,7 @@ model ConversationNote {
 
 model SavedReply {
   id           String       @id @default(cuid())
-  orgId        String      
+  orgId        String
   departmentId String?
   name         String
   shortcut     String?
@@ -281,7 +294,6 @@ enum AuditAction {
   CONVERSATION_TAG_REMOVED
   CUSTOMER_TAG_ADDED
   CUSTOMER_TAG_REMOVED
-  CONVERSATION_RESOLVED
   CONVERSATION_NOTE_CREATED
   CONVERSATION_NOTE_UPDATED
   CONVERSATION_NOTE_DELETED
@@ -290,6 +302,7 @@ enum AuditAction {
   SAVED_REPLY_DELETED
   ROUTING_SETTINGS_UPDATED
   BUSINESS_HOURS_UPDATED
+  CONVERSATION_RESOLVED
 }
 
 enum SenderType {
@@ -303,7 +316,6 @@ enum Channel {
   WHATSAPP
   EMAIL
 }
-
 
 enum MessageStatus {
   PENDING

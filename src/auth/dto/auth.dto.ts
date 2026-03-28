@@ -18,4 +18,8 @@ export class OnboardDto {
 export class LoginDto {
   email!: string;
   password!: string;
+  /**
+   * Optional orgId to disambiguate logins when the same email exists in multiple orgs.
+   */
+  orgId?: string;
 }

@@ -16,7 +16,7 @@ export class RoutingSettingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getOrCreate(orgId: string): Promise<RoutingSettings> {
-    let settings = await this.prisma.routingSettings.findUnique({
+    let settings = await this.prisma.routingSettings.findFirst({
       where: { orgId },
     });
 
@@ -39,7 +39,8 @@ export class RoutingSettingsService {
   ): Promise<RoutingSettings> {
     const existing = await this.getOrCreate(currentUser.orgId);
 
-    return this.prisma.routingSettings.update({
+    // orgId is unique for RoutingSettings, but we still use updateMany to satisfy tenant enforcement.
+    await this.prisma.routingSettings.updateMany({
       where: { orgId: existing.orgId },
       data: {
         ...(dto.autoRoutingEnabled !== undefined && {
@@ -57,5 +58,14 @@ export class RoutingSettingsService {
         }),
       },
     });
+
+    const updated = await this.prisma.routingSettings.findFirst({
+      where: { orgId: existing.orgId },
+    });
+    if (!updated) {
+      // Should never happen; if it does, avoid leaking details.
+      throw new Error('Failed to update routing settings');
+    }
+    return updated;
   }
 }

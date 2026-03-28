@@ -302,6 +302,7 @@ export class ConversationsService {
           // Create a placeholder message record for idempotency then send via SMTP
           const msg = await this.prisma.message.create({
             data: {
+              orgId: currentUser.orgId,
               conversationId: conversation.id,
               senderType: 'STAFF',
               senderId: currentUser.userId,
@@ -450,6 +451,7 @@ export class ConversationsService {
         },
       },
       create: {
+        orgId: currentUser.orgId,
         conversationId: conversation.id,
         tagId: tag.id,
       },

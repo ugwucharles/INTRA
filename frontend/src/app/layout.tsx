@@ -15,16 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "INTRA - Social CRM",
+  // Keep tab text minimal so favicon/logo is visually dominant.
+  title: " ",
   description: "Modern social CRM platform for managing customer conversations",
   icons: {
     icon: [
-      { url: '/favicon.png', type: 'image/png' },
       { url: '/intra.logo.1.png', type: 'image/png' },
     ],
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    shortcut: '/intra.logo.1.png',
+    apple: '/intra.logo.1.png',
   },
+};
+
+export const viewport: import("next").Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

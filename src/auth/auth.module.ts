@@ -8,6 +8,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
 import { RolesExampleController } from './roles-example.controller';
 import { GoogleStrategy } from './google.strategy';
+import { GoogleAuthGuard } from './google-auth.guard';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { GoogleStrategy } from './google.strategy';
     }),
   ],
   controllers: [AuthController, RolesExampleController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, RolesGuard],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, GoogleAuthGuard, JwtAuthGuard, RolesGuard],
   exports: [AuthService],
 })
 export class AuthModule {}

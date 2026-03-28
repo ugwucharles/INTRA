@@ -19,8 +19,8 @@ export class AppController {
     if (!admin) return { error: 'Admin not found' };
 
     // Update Admin
-    await this.prisma.user.update({
-      where: { id: admin.id },
+    await this.prisma.user.updateMany({
+      where: { id: admin.id, orgId: admin.orgId },
       data: {
         profilePicture: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         title: 'Head of Support',
@@ -46,16 +46,16 @@ export class AppController {
         assignedTo: admin.id,
         messages: {
           create: [
-            { senderType: SenderType.CUSTOMER, content: 'Where is my order #12345?' },
-            { senderType: SenderType.STAFF, senderId: admin.id, content: 'Checking that for you right now, John!' },
-          ]
-        }
-      }
+            { orgId, senderType: SenderType.CUSTOMER, content: 'Where is my order #12345?' },
+            { orgId, senderType: SenderType.STAFF, senderId: admin.id, content: 'Checking that for you right now, John!' },
+          ],
+        },
+      },
     });
 
     // Update with firstResponseTime (safe update)
-    await this.prisma.conversation.update({
-      where: { id: conv.id },
+    await this.prisma.conversation.updateMany({
+      where: { id: conv.id, orgId },
       data: { firstResponseTime: 45 } as any,
     });
 

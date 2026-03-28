@@ -38,6 +38,7 @@ export interface User {
   level?: 'Junior' | 'Middle' | 'Senior';
   ratingTotal: number;
   ratingCount: number;
+  orgName?: string;
   stats?: {
     completed: number;
     open: number;
@@ -199,6 +200,7 @@ async function request<T>(
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    cache: 'no-store',
     ...options,
     headers,
   });
@@ -221,7 +223,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(dto),
     }),
-    me: () => request<User>('/auth/me'),
+    me: () => request<User>(`/auth/me?_t=${Date.now()}`),
     updateStatus: (isOnline: boolean) =>
       request<User>('/auth/status', {
         method: 'PATCH',

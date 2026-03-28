@@ -71,7 +71,7 @@ export class SocialAccountsService {
       throw new BadRequestException('Invalid OAuth state signature');
     }
     const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
-    const tooOld = Date.now() - payload.ts > 10 * 60 * 1000;
+    const tooOld = Date.now() - payload.ts > 60 * 60 * 1000; // Increase to 1 hour for server clock drift
     if (tooOld) {
       throw new BadRequestException('OAuth state expired');
     }
@@ -94,8 +94,8 @@ export class SocialAccountsService {
         throw new ConflictException('This Page is already connected to another organization.');
       }
     }
-    const existing = await this.prisma.socialAccount.findUnique({
-      where: { orgId_channel: { orgId, channel: dto.channel } },
+    const existing = await this.prisma.socialAccount.findFirst({
+      where: { orgId, channel: dto.channel },
     });
     if (existing) {
       throw new ConflictException(
@@ -109,15 +109,20 @@ export class SocialAccountsService {
 
   async update(orgId: string, id: string, dto: UpdateSocialAccountDto) {
     await this.findOneOrFail(orgId, id);
-    return this.prisma.socialAccount.update({
-      where: { id },
+    await this.prisma.socialAccount.updateMany({
+      where: { id, orgId },
       data: dto,
     });
+    const updated = await this.prisma.socialAccount.findFirst({ where: { id, orgId } });
+    if (!updated) {
+      throw new NotFoundException('Social account not found');
+    }
+    return updated;
   }
 
   async remove(orgId: string, id: string) {
     await this.findOneOrFail(orgId, id);
-    await this.prisma.socialAccount.delete({ where: { id } });
+    await this.prisma.socialAccount.deleteMany({ where: { id, orgId } });
     return { success: true };
   }
 
@@ -296,8 +301,8 @@ export class SocialAccountsService {
     orgId: string,
     channel: Channel,
   ): Promise<{ accessToken: string; pageId: string | null; appSecret: string | null; phoneNumberId: string | null } | null> {
-    const account = await this.prisma.socialAccount.findUnique({
-      where: { orgId_channel: { orgId, channel } },
+    const account = await this.prisma.socialAccount.findFirst({
+      where: { orgId, channel },
       select: { accessToken: true, pageId: true, appSecret: true, phoneNumberId: true, isActive: true },
     });
     if (!account || !account.isActive) return null;

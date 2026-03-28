@@ -77,10 +77,18 @@ export class CustomersService {
     // Any manual update via the API is treated as explicitly saving this contact.
     data.isSaved = true;
 
-    const updated = await this.prisma.customer.update({
-      where: { id: customer.id },
+    await this.prisma.customer.updateMany({
+      where: { id: customer.id, orgId: currentUser.orgId },
       data,
     });
+
+    const updated = await this.prisma.customer.findFirst({
+      where: { id: customer.id, orgId: currentUser.orgId },
+    });
+
+    if (!updated) {
+      throw new NotFoundException('Customer not found in this organization');
+    }
 
     return updated;
   }
@@ -97,12 +105,11 @@ export class CustomersService {
       throw new NotFoundException('Customer not found in this organization');
     }
 
-    const note = await this.prisma.customerNote.findUnique({
+    const note = await this.prisma.customerNote.findFirst({
       where: {
-        customerId_userId: {
-          customerId: customer.id,
-          userId: currentUser.userId,
-        },
+        orgId: currentUser.orgId,
+        customerId: customer.id,
+        userId: currentUser.userId,
       },
     });
 
@@ -198,6 +205,7 @@ export class CustomersService {
         },
       },
       create: {
+        orgId: currentUser.orgId,
         customerId: customer.id,
         tagId: tag.id,
       },

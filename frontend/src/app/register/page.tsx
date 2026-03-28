@@ -40,17 +40,23 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-6 sm:py-12">
       <div className="w-full max-w-md ios-appear">
-        <div className="text-center mt-6 mb-6">
+        <div className="text-center mt-3 mb-4 sm:mt-6 sm:mb-6">
           <div className="flex justify-center mb-3">
-            <Image src="/intra.logo.1.png" alt="Logo" width={120} height={40} className="h-10 w-auto mix-blend-multiply" />
+            <Image
+              src="/intra.logo.1.png"
+              alt="Logo"
+              width={120}
+              height={40}
+              className="h-10 w-auto mix-blend-multiply opacity-95"
+            />
           </div>
-          <p className="text-gray-600">Create your organization</p>
+          <p className="text-sm sm:text-base text-gray-600">Create your organization</p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Get started</h2>
+        <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border border-gray-100">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-5 sm:mb-6">Get started</h2>
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
@@ -58,7 +64,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <Input
               label="Organization Name"
               value={formData.organizationName}
@@ -125,7 +131,7 @@ export default function RegisterPage() {
               onClick={() => {
                 window.location.href = `${API_BASE_URL}/auth/google`;
               }}
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-2xl py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-2xl py-2.5 sm:py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -137,13 +143,13 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-5 sm:mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
             <Link href="/login" className="font-medium text-orange-500 hover:text-orange-600 hover:underline">
               Sign in
             </Link>
           </p>
-          <p className="mt-4 text-center text-[11px] text-gray-400 max-w-xs mx-auto">
+          <p className="mt-3 sm:mt-4 text-center text-[11px] text-gray-400 max-w-xs mx-auto">
             By creating an account, you agree to our{' '}
             <a href="https://docs.google.com/document/d/1neCA3dnCUDCscCMJ7FOeJThW5L-oCDdZAFVM17vyZco/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Terms of Service</a>
             {' '}and{' '}

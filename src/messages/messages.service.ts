@@ -58,6 +58,7 @@ export class MessagesService {
 
     const message = await this.prisma.message.create({
       data: {
+        orgId: currentUser.orgId,
         conversationId: conversation.id,
         senderType: SenderType.STAFF,
         senderId: currentUser.userId,
@@ -67,8 +68,8 @@ export class MessagesService {
 
     if (conversation.firstResponseTime === null) {
       const secondsDiff = Math.floor((Date.now() - conversation.createdAt.getTime()) / 1000);
-      await this.prisma.conversation.update({
-        where: { id: conversation.id },
+      await this.prisma.conversation.updateMany({
+        where: { id: conversation.id, orgId: currentUser.orgId },
         data: { firstResponseTime: secondsDiff },
       });
     }
@@ -162,13 +163,14 @@ export class MessagesService {
     }
 
     // Mark messages as read when listing them
-    await this.prisma.conversation.update({
-      where: { id: conversation.id },
+    await this.prisma.conversation.updateMany({
+      where: { id: conversation.id, orgId: currentUser.orgId },
       data: { unreadCount: 0 },
     });
 
     return this.prisma.message.findMany({
       where: {
+        orgId: currentUser.orgId,
         conversationId: conversation.id,
       },
       orderBy: { createdAt: 'asc' },

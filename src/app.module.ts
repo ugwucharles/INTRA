@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -18,6 +18,7 @@ import { SavedRepliesModule } from './saved-replies/saved-replies.module';
 import { EmailModule } from './email/email.module';
 import { SocketModule } from './socket/socket.module';
 import { SocialAccountsModule } from './social-accounts/social-accounts.module';
+import { TenantContextInterceptor } from './tenancy/tenant-context.interceptor';
 
 @Module({
   imports: [
@@ -43,6 +44,8 @@ import { SocialAccountsModule } from './social-accounts/social-accounts.module';
     AppService,
     // Apply rate limiting globally to every endpoint
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Provide per-request tenant context (orgId) for Prisma enforcement
+    { provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor },
   ],
 })
 export class AppModule {}

@@ -168,8 +168,8 @@ export class MetaService {
     messageId: string,
     text: string,
   ): Promise<void> {
-    const message = await this.prisma.message.findUnique({
-      where: { id: messageId },
+    const message = await this.prisma.message.findFirst({
+      where: { id: messageId, orgId },
     });
 
     if (!message) {
@@ -202,8 +202,8 @@ export class MetaService {
     try {
       await this.sendOutboundTextMessage(orgId, conversationId, customer, text);
 
-      await this.prisma.message.update({
-        where: { id: messageId },
+      await this.prisma.message.updateMany({
+        where: { id: messageId, orgId },
         data: {
           status: MessageStatus.SENT,
         },
@@ -221,8 +221,8 @@ export class MetaService {
     } catch (err: any) {
       const newRetry = (message.retryCount ?? 0) + 1;
 
-      await this.prisma.message.update({
-        where: { id: messageId },
+      await this.prisma.message.updateMany({
+        where: { id: messageId, orgId },
         data: {
           retryCount: newRetry,
           status: newRetry >= 3 ? MessageStatus.FAILED : MessageStatus.PENDING,
@@ -508,8 +508,8 @@ export class MetaService {
           },
         });
       } else if (displayName && customer.name !== displayName) {
-        customer = await this.prisma.customer.update({
-          where: { id: customer.id },
+        await this.prisma.customer.updateMany({
+          where: { id: customer.id, orgId },
           data: { name: displayName },
         });
       }
@@ -542,6 +542,7 @@ export class MetaService {
       try {
         message = await this.prisma.message.create({
           data: {
+            orgId,
             conversationId: conversation.id,
             senderType: SenderType.CUSTOMER,
             senderId: waId,
@@ -560,8 +561,8 @@ export class MetaService {
         throw err;
       }
 
-      await this.prisma.conversation.update({
-        where: { id: conversation.id },
+      await this.prisma.conversation.updateMany({
+        where: { id: conversation.id, orgId },
         data: {
           ...(sentAt && { updatedAt: sentAt }),
           unreadCount: { increment: 1 },
@@ -632,8 +633,8 @@ export class MetaService {
           );
           if (questionReplies.length > 0) {
             repliesToSend.push(...questionReplies.map((r) => r.message));
-            await this.prisma.conversation.update({
-              where: { id: conversation.id },
+            await this.prisma.conversation.updateMany({
+              where: { id: conversation.id, orgId },
               data: { routingQuestionSent: true },
             });
             conversation.routingQuestionSent = true;
@@ -752,8 +753,8 @@ export class MetaService {
         },
       });
     } else if (displayName && customer.name !== displayName) {
-      customer = await this.prisma.customer.update({
-        where: { id: customer.id },
+      await this.prisma.customer.updateMany({
+        where: { id: customer.id, orgId },
         data: { name: displayName },
       });
     }
@@ -795,6 +796,7 @@ export class MetaService {
     try {
       message = await this.prisma.message.create({
         data: {
+          orgId,
           conversationId: conversation.id,
           senderType: SenderType.CUSTOMER,
           senderId,
@@ -815,8 +817,8 @@ export class MetaService {
     }
 
     // Keep conversation's updatedAt and unreadCount in sync with latest inbound message
-    await this.prisma.conversation.update({
-      where: { id: conversation.id },
+    await this.prisma.conversation.updateMany({
+      where: { id: conversation.id, orgId },
       data: {
         // Use the message timestamp if available, otherwise let Prisma set updatedAt to now()
         ...(sentAt && { updatedAt: sentAt }),
@@ -896,8 +898,8 @@ export class MetaService {
           repliesToSend.push(...questionReplies.map((r) => r.message));
 
           if (!conversation.routingQuestionSent) {
-            await this.prisma.conversation.update({
-              where: { id: conversation.id },
+            await this.prisma.conversation.updateMany({
+              where: { id: conversation.id, orgId },
               data: { routingQuestionSent: true },
             });
             conversation.routingQuestionSent = true;

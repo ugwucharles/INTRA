@@ -83,23 +83,40 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const { email, password } = dto;
+    const { email, password, orgId } = dto;
 
     if (!email || !password) {
       throw new BadRequestException('Email and password are required');
     }
 
-    const user = await this.prisma.user.findFirst({
-      where: { email },
-      include: { org: { select: { isOnboarded: true } } },
+    const users = await this.prisma.user.findMany({
+      where: { email, isActive: true, ...(orgId ? { orgId } : {}) },
+      include: { org: { select: { id: true, isOnboarded: true, name: true } } },
+      orderBy: { createdAt: 'asc' },
     });
 
-    if (!user || !user.isActive) {
+    if (users.length === 0) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const passwordValid = await bcrypt.compare(password, user.password);
+    // If there are multiple users with the same email across organizations and
+    // the caller didn't disambiguate, do NOT guess — that causes cross-tenant confusion.
+    if (!orgId) {
+      const distinctOrgs = new Map<string, { id: string; name: string | null }>();
+      for (const u of users) {
+        if (u.org?.id) distinctOrgs.set(u.org.id, { id: u.org.id, name: u.org.name ?? null });
+      }
+      if (distinctOrgs.size > 1) {
+        throw new BadRequestException({
+          message: 'Multiple organizations found for this email. Please select an organization to log in.',
+          organizations: Array.from(distinctOrgs.values()),
+        });
+      }
+    }
 
+    const user = users[0];
+
+    const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -117,10 +134,10 @@ export class AuthService {
       profilePicture: user.profilePicture,
       title: user.title,
       level: user.level,
+      orgName: user.org?.name,
       orgOnboarded: user.org?.isOnboarded ?? false,
     };
 
-    // Match frontend expectation: { access_token, user }
     return {
       access_token: accessToken,
       user: sanitizedUser,
@@ -133,7 +150,7 @@ export class AuthService {
         id: currentUser.userId,
         orgId: currentUser.orgId,
       },
-      include: { org: { select: { isOnboarded: true } } },
+      include: { org: { select: { isOnboarded: true, name: true } } },
     });
 
     if (!user) {
@@ -152,16 +169,25 @@ export class AuthService {
       title: user.title,
       level: user.level,
       createdAt: user.createdAt,
+      orgName: user.org?.name,
       orgOnboarded: user.org?.isOnboarded ?? false,
     };
   }
 
   async updateStatus(currentUser: JwtPayload, isOnline: boolean) {
-    const user = await this.prisma.user.update({
-      where: { id: currentUser.userId },
+    await this.prisma.user.updateMany({
+      where: { id: currentUser.userId, orgId: currentUser.orgId },
       data: { isOnline },
-      include: { org: { select: { isOnboarded: true } } },
     });
+
+    const user = await this.prisma.user.findFirst({
+      where: { id: currentUser.userId, orgId: currentUser.orgId },
+      include: { org: { select: { isOnboarded: true, name: true } } },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
 
     return {
       id: user.id,
@@ -172,6 +198,7 @@ export class AuthService {
       isActive: user.isActive,
       isOnline: user.isOnline,
       createdAt: user.createdAt,
+      orgName: user.org?.name,
       orgOnboarded: user.org?.isOnboarded ?? false,
     };
   }
@@ -188,11 +215,19 @@ export class AuthService {
       data.password = await bcrypt.hash(dto.password, 10);
     }
 
-    const user = await this.prisma.user.update({
-      where: { id: currentUser.userId },
+    await this.prisma.user.updateMany({
+      where: { id: currentUser.userId, orgId: currentUser.orgId },
       data,
-      include: { org: { select: { isOnboarded: true } } },
     });
+
+    const user = await this.prisma.user.findFirst({
+      where: { id: currentUser.userId, orgId: currentUser.orgId },
+      include: { org: { select: { isOnboarded: true, name: true } } },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
 
     return {
       id: user.id,
@@ -206,6 +241,7 @@ export class AuthService {
       title: user.title,
       level: user.level,
       createdAt: user.createdAt,
+      orgName: user.org?.name,
       orgOnboarded: user.org?.isOnboarded ?? false,
     };
   }
@@ -222,7 +258,16 @@ export class AuthService {
       email.split('@')[0];
     const avatar = profile.photos?.[0]?.value || undefined;
 
-    let user = await this.prisma.user.findFirst({ where: { email } });
+    // Multi-tenant check: find users with this email.
+    // In a true multi-tenant system via Google, if the email exists in multiple orgs,
+    // we should probably ask which one they want to log into.
+    // For now, we'll return the first one found.
+    const users = await this.prisma.user.findMany({ 
+      where: { email },
+      include: { org: true }
+    });
+
+    let user = users.length > 0 ? users[0] : null;
 
     if (!user) {
       const orgName = `${displayName}'s Organization`;
@@ -239,24 +284,29 @@ export class AuthService {
             isActive: true,
             profilePicture: avatar,
           },
+          include: { org: true }
         });
         return created;
       });
       user = result;
     } else if (!user.profilePicture && avatar) {
-      user = await this.prisma.user.update({
-        where: { id: user.id },
+      await this.prisma.user.updateMany({
+        where: { id: user.id, orgId: user.orgId },
         data: { profilePicture: avatar },
+      });
+      user = await this.prisma.user.findFirst({
+        where: { id: user.id, orgId: user.orgId },
+        include: { org: true },
       });
     }
 
-    if (!user.isActive) {
+    if (!user || !user.isActive) {
       throw new UnauthorizedException('Account is inactive');
     }
 
-    const finalUser = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      include: { org: { select: { isOnboarded: true } } },
+    const finalUser = await this.prisma.user.findFirst({
+      where: { id: user.id, orgId: user.orgId },
+      include: { org: { select: { isOnboarded: true, name: true } } },
     });
 
     const accessToken = await this.signToken(finalUser!.id, finalUser!.orgId, finalUser!.role);
@@ -273,6 +323,7 @@ export class AuthService {
         profilePicture: finalUser!.profilePicture,
         title: finalUser!.title,
         level: finalUser!.level,
+        orgName: finalUser!.org?.name,
         orgOnboarded: finalUser!.org?.isOnboarded ?? false,
       },
     };

@@ -298,10 +298,21 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
         });
       } else {
         // Update subject to the latest email received on this conversation
-        conversation = await this.prisma.conversation.update({
-          where: { id: conversation.id },
+        await this.prisma.conversation.updateMany({
+          where: { id: conversation.id, orgId },
           data: { routingMetadata: { emailSubject: subject } },
         });
+        const refreshed = await this.prisma.conversation.findFirst({
+          where: { id: conversation.id, orgId },
+        });
+        if (refreshed) {
+          conversation = refreshed;
+        }
+      }
+
+      if (!conversation) {
+        this.logger.warn(`Conversation missing after upsert (orgId=${orgId})`);
+        return;
       }
       const isAwaitingRating =
         conversation.status === ConversationStatus.RESOLVED && conversation.awaitingRating;
@@ -316,6 +327,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
       try {
         message = await this.prisma.message.create({
           data: {
+            orgId,
             conversationId: conversation.id,
             senderType: SenderType.CUSTOMER,
             content: messageContent,
@@ -334,19 +346,26 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
       }
 
       // 4. Update conversation timestamp and unread count
-      let updatedConversation = await this.prisma.conversation.update({
-        where: { id: conversation.id },
+      await this.prisma.conversation.updateMany({
+        where: { id: conversation.id, orgId },
         data: { updatedAt: new Date(), unreadCount: { increment: 1 } },
+      });
+      let updatedConversation = await this.prisma.conversation.findFirst({
+        where: { id: conversation.id, orgId },
         include: { customer: true },
       });
+      if (!updatedConversation) {
+        this.logger.warn(`Conversation disappeared during email ingest (id=${conversation.id}, orgId=${orgId})`);
+        return;
+      }
 
       // If this conversation is awaiting a customer rating, process it and skip routing.
       if (isAwaitingRating) {
         await this.processRatingReply(orgId, conversation.id, conversation.resolvedBy, text);
         
         // Refresh updatedConversation to include the new rating and new status (CLOSED) so the UI updates instantly
-        const refreshed = await this.prisma.conversation.findUnique({
-          where: { id: conversation.id },
+        const refreshed = await this.prisma.conversation.findFirst({
+          where: { id: conversation.id, orgId },
           include: { customer: true },
         });
         if (refreshed) {
@@ -467,8 +486,8 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(`Attempting to send outbound email to ${toEmail}...`);
 
     // Retrieve the original subject stored when the inbound email was processed
-    const conv = await this.prisma.conversation.findUnique({
-      where: { id: conversationId },
+    const conv = await this.prisma.conversation.findFirst({
+      where: { id: conversationId, orgId },
       select: { routingMetadata: true },
     });
     const meta = conv?.routingMetadata as Record<string, any> | null;
@@ -485,16 +504,16 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
 
       this.logger.log(`Outbound email successfully sent to ${toEmail}`);
 
-      await this.prisma.message.update({
-        where: { id: messageId },
+      await this.prisma.message.updateMany({
+        where: { id: messageId, orgId },
         data: { status: MessageStatus.SENT },
       });
 
       this.logger.log(`Sent outbound email reply to ${toEmail}`);
     } catch (err: any) {
       this.logger.error(`Failed to send outbound email: ${err.message}`);
-      await this.prisma.message.update({
-        where: { id: messageId },
+      await this.prisma.message.updateMany({
+        where: { id: messageId, orgId },
         data: { status: MessageStatus.FAILED },
       });
     }

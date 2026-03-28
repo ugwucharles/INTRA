@@ -4,7 +4,7 @@ import { LoginDto, RegisterAdminDto, OnboardDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
 import type { JwtPayload } from './jwt.strategy';
-import { AuthGuard } from '@nestjs/passport';
+import { GoogleAuthGuard } from './google-auth.guard';
 import type { Request, Response } from 'express';
 
 @Controller('auth')
@@ -23,16 +23,19 @@ export class AuthController {
   }
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   googleAuth() {
     return;
   }
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
     const result = await this.authService.loginOrRegisterWithGoogle(req.user as any);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    let frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3001').replace(/\/$/, '');
+    if (process.env.NODE_ENV !== 'production' && /^https:\/\/localhost/i.test(frontendUrl)) {
+      frontendUrl = frontendUrl.replace(/^https:\/\/localhost/i, 'http://localhost');
+    }
     const redirectUrl = `${frontendUrl}/auth/google/callback?token=${encodeURIComponent(result.access_token)}`;
     return res.redirect(redirectUrl);
   }

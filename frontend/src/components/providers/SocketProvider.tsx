@@ -42,7 +42,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       auth: {
         token,
       },
-      transports: ['websocket', 'polling'], // Be more flexible
+      transports: ['polling', 'websocket'], // Try polling first for cPanel compatibility
     });
 
     newSocket.on('connect', () => {
