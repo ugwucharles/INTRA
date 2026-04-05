@@ -1,0 +1,34 @@
+node_modules/
+**/node_modules/
+.next/
+dist/
+build/
+.env*
+*.zip
+*.rar
+standalone/
+intra-upload
+
+# Debug/diagnostic scripts
+debug-*.js
+nuke-*.js
+check-*.js
+inspect-*.js
+lookup-*.js
+list-*.js
+count-*.js
+find-*.ts
+final-*.js
+deep-debug-*.js
+bulk-sync-*.js
+send-test-*.js
+fix_migration.js
+apply-migration.js
+package-*.js
+
+# Logs and result files
+*.log
+*.txt
+!README.md
+!START.md
+!DEPLOYaFRESH.md
