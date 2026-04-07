@@ -221,9 +221,10 @@ export class SocialAccountsService {
     url.searchParams.set('state', state);
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', scopes.join(','));
-    this.logger.log(
-      `Meta OAuth start: channel=${channel} redirect_uri=${this.oauthRedirectUri} scopeCount=${scopes.length}`,
-    );
+    console.log(`[Meta OAuth] Starting OAuth flow for ${channel}`);
+    console.log(`[Meta OAuth] Using redirect_uri: "${this.oauthRedirectUri}"`);
+    console.log(`[Meta OAuth] Full URL: ${url.toString().substring(0, 100)}...`);
+
     return {
       url: url.toString(),
       redirectUri: this.oauthRedirectUri,
@@ -237,10 +238,12 @@ export class SocialAccountsService {
       `handleOauthCallback: orgId=${ctx.orgId}, channel=${ctx.channel}`,
     );
     const appId = process.env.META_APP_ID;
-    const appSecret = process.env.META_APP_SECRET;
+    const appSecret = process.env.META_APP_SECRET || process.env.INSTAGRAM_APP_SECRET;
+    
     if (!appId || !appSecret) {
+      this.logger.error(`Credentials missing: appId=${!!appId}, appSecret=${!!appSecret}`);
       throw new InternalServerErrorException(
-        'Meta app credentials are not configured',
+        'Meta app credentials (META_APP_ID/META_APP_SECRET) are not configured',
       );
     }
 
@@ -256,9 +259,11 @@ export class SocialAccountsService {
     if (!tokenRes.ok) {
       const body = await tokenRes.text().catch(() => '');
       this.logger.error(
-        `Failed OAuth token exchange: ${tokenRes.status} ${body}`,
+        `[OAuth Failure] Status: ${tokenRes.status}, Body: ${body}`,
       );
-      throw new BadRequestException('Failed to exchange OAuth code');
+      // We pass the meta error back in the URL so the user can see it
+      const errorMsg = `Failed to exchange OAuth code. Reason: ${body}`;
+      return `${this.frontendUrl}/dashboard/channels?connect=error&msg=${encodeURIComponent(errorMsg)}`;
     }
     const tokenData: any = await tokenRes.json();
     const userAccessToken: string | undefined = tokenData?.access_token;
@@ -498,6 +503,18 @@ export class SocialAccountsService {
       throw new NotFoundException('Social account not found');
     }
     return account;
+  }
+
+  debugEnv() {
+    return {
+      NODE_ENV: process.env.NODE_ENV,
+      META_APP_ID: !!process.env.META_APP_ID,
+      META_APP_SECRET: !!process.env.META_APP_SECRET,
+      INSTAGRAM_APP_SECRET: !!process.env.INSTAGRAM_APP_SECRET,
+      REDIRECT_URI: this.oauthRedirectUri,
+      FRONTEND_URL: this.frontendUrl,
+      TIMESTAMP: new Date().toISOString(),
+    };
   }
 
   /** Strip sensitive fields before returning to API clients. */
