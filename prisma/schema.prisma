@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Organization {
@@ -338,7 +339,15 @@ enum FallbackBehavior {
 
 enum AutoReplyTrigger {
   FIRST_MESSAGE
+  AFTER_HOURS
   DEPARTMENT_SELECTION
   NO_AGENT_AVAILABLE
-  AFTER_HOURS
+}
+
+model AuthCode {
+  code      String   @id
+  token     String   @db.Text
+  userJson  String   @db.Text
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }

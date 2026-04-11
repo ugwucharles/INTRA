@@ -431,10 +431,9 @@ export class MetaService {
     text: string,
   ): Promise<void> {
     if (!customer.source || !customer.externalId) {
-      this.logger.warn(
+      throw new Error(
         'Cannot send Meta message: missing source or externalId',
       );
-      return;
     }
 
     if (customer.source === $Enums.Channel.WHATSAPP) {
@@ -452,13 +451,24 @@ export class MetaService {
       customer.source === $Enums.Channel.INSTAGRAM
         ? $Enums.Channel.INSTAGRAM
         : $Enums.Channel.FACEBOOK_MESSENGER;
-    const creds = await this.socialAccounts.findCredentials(orgId, channel);
+    // Prefer page-specific credentials for this customer to avoid sending with
+    // the wrong token when an org has multiple connected pages/accounts.
+    let creds = await this.socialAccounts.findCredentials(
+      orgId,
+      channel,
+      customer.pageId ?? undefined,
+    );
+    if (!creds && customer.pageId) {
+      this.logger.warn(
+        `No ${channel} credentials found for customer.pageId=${customer.pageId}; falling back to org-level channel token`,
+      );
+      creds = await this.socialAccounts.findCredentials(orgId, channel);
+    }
     const pageAccessToken = creds?.accessToken;
     if (!pageAccessToken) {
-      this.logger.error(
+      throw new Error(
         `No ${channel} access token for org ${orgId}; cannot send outbound messages`,
       );
-      return;
     }
 
     const url = new URL('https://graph.facebook.com/v19.0/me/messages');
@@ -479,7 +489,7 @@ export class MetaService {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => '');
-        this.logger.error(
+        throw new Error(
           `Failed to send Meta message for org ${orgId}, conversation ${conversationId}: ${response.status} ${response.statusText} ${errorText}`,
         );
       } else {
@@ -489,6 +499,7 @@ export class MetaService {
       }
     } catch (err) {
       this.logger.error('Error while sending Meta message', err as Error);
+      throw err;
     }
   }
 
@@ -510,10 +521,9 @@ export class MetaService {
     const accessToken = waCreds?.accessToken;
 
     if (!phoneNumberId || !accessToken) {
-      this.logger.error(
+      throw new Error(
         `WhatsApp credentials not configured for org ${orgId}; cannot send WhatsApp message`,
       );
-      return;
     }
 
     const url = `https://graph.facebook.com/v19.0/${phoneNumberId}/messages`;
@@ -536,7 +546,7 @@ export class MetaService {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => '');
-        this.logger.error(
+        throw new Error(
           `Failed to send WhatsApp message for org ${orgId}, conversation ${conversationId}: ${response.status} ${response.statusText} ${errorText}`,
         );
       } else {
@@ -546,6 +556,7 @@ export class MetaService {
       }
     } catch (err) {
       this.logger.error('Error while sending WhatsApp message', err as Error);
+      throw err;
     }
   }
 

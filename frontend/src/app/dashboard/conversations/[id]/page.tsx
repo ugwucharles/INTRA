@@ -271,6 +271,8 @@ export default function ConversationDetailPage() {
       setMentionQuery('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
+      // Message may have been persisted with FAILED status on backend; refresh list so user sees it.
+      await loadMessages(false);
     } finally {
       setSending(false);
     }
@@ -923,6 +925,16 @@ export default function ConversationDetailPage() {
                             }`}
                           >
                             <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                            {isStaff && message.status === 'FAILED' && (
+                              <p className="mt-1 text-[10px] font-semibold text-red-200">
+                                Delivery failed
+                              </p>
+                            )}
+                            {isStaff && message.status === 'PENDING' && (
+                              <p className="mt-1 text-[10px] font-semibold text-blue-200">
+                                Sending...
+                              </p>
+                            )}
                             
                             {/* Subtle hover timestamp (optional, but clean) */}
                             {/* <div className={`absolute -bottom-5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-gray-400 ${isStaff ? 'right-0' : 'left-0'}`}>

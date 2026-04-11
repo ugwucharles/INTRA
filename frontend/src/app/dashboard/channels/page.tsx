@@ -248,19 +248,6 @@ export default function ChannelsPage() {
             <h1 className="text-3xl font-bold text-gray-900">Channels</h1>
             <p className="text-gray-500 mt-1">Link Facebook, Instagram, WhatsApp, Email, and more.</p>
             
-            <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/50 px-5 py-4 text-sm text-blue-800 flex items-start gap-4 shadow-sm backdrop-blur-sm transition-all hover:bg-blue-50">
-              <div className="mt-0.5 p-1.5 bg-blue-100 rounded-lg text-blue-600">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-blue-900">Connection Sync Time</p>
-                <p className="text-blue-700/80 mt-1 leading-relaxed">
-                  After connecting a new channel, it can take up to <strong>30 minutes</strong> for social platforms to fully synchronize. If your status doesn't update immediately, please wait a moment and refresh the page.
-                </p>
-              </div>
-            </div>
 
             {connectStatus === 'success' && (
               <div className="mt-4 rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">

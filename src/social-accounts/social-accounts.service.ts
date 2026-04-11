@@ -33,11 +33,27 @@ export class SocialAccountsService {
   constructor(private readonly prisma: PrismaService) {}
 
   private get oauthRedirectUri(): string {
-    const value = process.env.META_OAUTH_REDIRECT_URI;
+    const value = this.normalizeRedirectUri(process.env.META_OAUTH_REDIRECT_URI);
     if (!value) {
       throw new InternalServerErrorException(
         'META_OAUTH_REDIRECT_URI is not configured',
       );
+    }
+    return value;
+  }
+
+  /**
+   * Env values are sometimes copied with quotes/spaces.
+   * Meta expects a strict redirect URI match for code exchange.
+   */
+  private normalizeRedirectUri(raw: string | undefined): string {
+    if (!raw) return '';
+    let value = raw.trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1).trim();
     }
     return value;
   }
@@ -238,12 +254,17 @@ export class SocialAccountsService {
       `handleOauthCallback: orgId=${ctx.orgId}, channel=${ctx.channel}`,
     );
     const appId = process.env.META_APP_ID;
-    const appSecret = process.env.META_APP_SECRET || process.env.INSTAGRAM_APP_SECRET;
+    const appSecret =
+      ctx.channel === 'FACEBOOK_MESSENGER'
+        ? process.env.META_APP_SECRET
+        : process.env.META_APP_SECRET || process.env.INSTAGRAM_APP_SECRET;
     
     if (!appId || !appSecret) {
       this.logger.error(`Credentials missing: appId=${!!appId}, appSecret=${!!appSecret}`);
       throw new InternalServerErrorException(
-        'Meta app credentials (META_APP_ID/META_APP_SECRET) are not configured',
+        ctx.channel === 'FACEBOOK_MESSENGER'
+          ? 'Meta app credentials (META_APP_ID/META_APP_SECRET) are not configured for Facebook'
+          : 'Meta app credentials (META_APP_ID/META_APP_SECRET or INSTAGRAM_APP_SECRET) are not configured',
       );
     }
 

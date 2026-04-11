@@ -3,6 +3,9 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* Frontend config */
+  compiler: {
+    styledComponents: true,
+  },
   typescript: {
     ignoreBuildErrors: true, // Temporarily ignore for development
   },

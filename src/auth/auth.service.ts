@@ -14,34 +14,14 @@ import { JwtPayload } from './jwt.strategy';
 import { Role } from './role.enum';
 import { Profile } from 'passport-google-oauth20';
 
-/** Temporary store for one-time Google OAuth authorization codes. */
-interface PendingAuthCode {
-  accessToken: string;
-  user: Record<string, any>;
-  expiresAt: number;
-}
-
-/** How long an auth code is valid (60 seconds). */
-const AUTH_CODE_TTL_MS = 60_000;
-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-  /**
-   * In-memory map of one-time authorization codes → JWT + user data.
-   * Codes are deleted after use or when they expire.
-   * For multi-instance deployments, swap this with Redis.
-   */
-  private readonly pendingAuthCodes = new Map<string, PendingAuthCode>();
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) {
-    // Periodically purge expired codes (every 5 minutes)
-    setInterval(() => this.purgeExpiredCodes(), 5 * 60_000).unref();
-  }
+  ) {}
 
   async registerAdmin(dto: RegisterAdminDto) {
     const { organizationName, name, email, password } = dto;
@@ -300,7 +280,11 @@ export class AuthService {
     };
   }
 
-  async loginOrRegisterWithGoogle(profile: Profile) {
+  async loginOrRegisterWithGoogle(profile: Profile): Promise<{
+    code?: string;
+    access_token?: string;
+    user: Record<string, any>;
+  }> {
     const email = profile.emails?.[0]?.value?.toLowerCase().trim();
     if (!email) {
       throw new BadRequestException('Google account did not provide an email');
@@ -392,16 +376,9 @@ export class AuthService {
       orgOnboarded: finalUser!.org?.isOnboarded ?? false,
     };
 
-    // Generate a one-time auth code instead of returning the JWT directly.
-    // The controller will redirect with ?code= and the frontend exchanges it via POST.
-    const code = crypto.randomBytes(32).toString('hex');
-    this.pendingAuthCodes.set(code, {
-      accessToken,
-      user: userData,
-      expiresAt: Date.now() + AUTH_CODE_TTL_MS,
-    });
-
-    return { code, user: userData };
+    // Pass the token directly — the frontend callback page handles ?token=xxx
+    // by storing it in localStorage and navigating to the dashboard.
+    return { access_token: accessToken, user: userData };
   }
 
   async completeOnboarding(currentUser: JwtPayload, dto: any) {
@@ -478,36 +455,33 @@ export class AuthService {
    * Exchange a one-time authorization code (from Google OAuth) for a JWT + user data.
    * The code is single-use and expires after 60 seconds.
    */
-  exchangeGoogleAuthCode(code: string): {
+  async exchangeGoogleAuthCode(code: string): Promise<{
     access_token: string;
     user: Record<string, any>;
-  } {
-    const pending = this.pendingAuthCodes.get(code);
+  }> {
+    const pending = await this.prisma.authCode.findUnique({
+      where: { code },
+    });
+
     if (!pending) {
       throw new UnauthorizedException('Invalid or expired authorization code');
     }
 
     // Single-use: delete immediately
-    this.pendingAuthCodes.delete(code);
+    await this.prisma.authCode.delete({
+      where: { code },
+    });
 
-    if (Date.now() > pending.expiresAt) {
+    if (Date.now() > pending.expiresAt.getTime()) {
       throw new UnauthorizedException('Authorization code expired');
     }
 
     return {
-      access_token: pending.accessToken,
-      user: pending.user,
+      access_token: pending.token,
+      user: JSON.parse(pending.userJson),
     };
   }
 
-  private purgeExpiredCodes() {
-    const now = Date.now();
-    for (const [code, entry] of this.pendingAuthCodes) {
-      if (now > entry.expiresAt) {
-        this.pendingAuthCodes.delete(code);
-      }
-    }
-  }
 
   private async signToken(
     userId: string,

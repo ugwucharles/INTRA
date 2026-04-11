@@ -16,7 +16,12 @@ function validateEnv() {
     'META_PAGE_ACCESS_TOKEN',
   ];
 
-  const missing = required.filter((key) => !process.env[key]);
+  const missing = required.filter((key) => {
+    if (key === 'META_APP_SECRET') {
+      return !process.env.META_APP_SECRET && !process.env.INSTAGRAM_APP_SECRET;
+    }
+    return !process.env[key];
+  });
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}`,

@@ -4,7 +4,6 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { TenantContext } from '../tenancy/tenant-context';
 
@@ -27,12 +26,7 @@ export class PrismaService
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error('DATABASE_URL is not set');
-    }
-    const adapter = new PrismaPg({ connectionString: databaseUrl });
-    super({ adapter });
+    super();
 
     // Build the tenant-scoping extension.
     const extendedClient = this.$extends({

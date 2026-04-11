@@ -1,0 +1,49 @@
+# render.yaml
+# Blueprint for INTRA on Render
+
+version: "1"
+
+services:
+  # -----------------------------------
+  # 1. NestJS Backend API
+  # -----------------------------------
+  - type: web
+    name: intra-api
+    env: node
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: intra-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # You can manually add Meta API keys, Google Auth, and JWT secrets in the Render Dashboard later!
+
+  # -----------------------------------
+  # 2. Next.js Frontend
+  # -----------------------------------
+  - type: web
+    name: intra-web
+    env: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        # This automatically creates predictability for the backend URL (e.g., https://intra-api.onrender.com)
+        # Note: You may need to tweak this if you add custom domains!
+        value: https://intra-api.onrender.com
+      - key: NODE_ENV
+        value: production
+
+# -----------------------------------
+# 3. PostgreSQL Database
+# -----------------------------------
+databases:
+  - name: intra-db
+    databaseName: intra
+    user: intra
+    # Free tier database (Note: Expires after 90 days on Free Tier!)

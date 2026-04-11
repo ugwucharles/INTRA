@@ -6,6 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { api } from '@/lib/api';
+import { Select } from '@/components/ui/Select';
+import { countries } from '@/lib/countries';
 
 export default function OnboardingPage() {
     const router = useRouter();
@@ -72,19 +74,18 @@ export default function OnboardingPage() {
                         required
                         placeholder="Acme Inc."
                     />
-                    <Input
+                    <Select
                         label="Country"
                         value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                        required
-                        placeholder="United States"
+                        onChange={(val) => setCountry(val)}
+                        options={[{ label: 'Select a country', value: '' }, ...countries.map(c => ({ label: c, value: c }))]}
                     />
                     <Input
                         label="Phone Number"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                         required
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="e.g. 2348000000000"
                     />
                     <Input
                         label="Address (Optional)"

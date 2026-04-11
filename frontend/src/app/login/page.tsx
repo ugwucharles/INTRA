@@ -15,7 +15,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://api.intrabox.com.ng'
+      : 'http://localhost:3000');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

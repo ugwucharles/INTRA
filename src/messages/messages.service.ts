@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -7,7 +8,12 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { JwtPayload } from '../auth/jwt.strategy';
-import { SenderType, $Enums, ConversationStatus } from '@prisma/client';
+import {
+  SenderType,
+  $Enums,
+  ConversationStatus,
+  MessageStatus,
+} from '@prisma/client';
 import { MetaService } from '../meta/meta.service';
 import { EmailService } from '../email/email.service';
 import { SocketGateway } from '../socket/socket.gateway';
@@ -72,6 +78,22 @@ export class MessagesService {
     this.logger.log(
       `Creating STAFF message for org ${currentUser.orgId}, conversation ${conversation.id}`,
     );
+    const fullConversation = await this.prisma.conversation.findFirst({
+      where: { id: conversation.id, orgId: currentUser.orgId },
+      include: { customer: true },
+    });
+    const customer = fullConversation?.customer;
+    const isSocialCustomer =
+      !!customer &&
+      !!customer.source &&
+      (
+        [
+          $Enums.Channel.FACEBOOK_MESSENGER,
+          $Enums.Channel.INSTAGRAM,
+          $Enums.Channel.WHATSAPP,
+        ] as string[]
+      ).includes(customer.source);
+
     const message = await this.prisma.message.create({
       data: {
         orgId: currentUser.orgId,
@@ -79,6 +101,7 @@ export class MessagesService {
         senderType: SenderType.STAFF,
         senderId: currentUser.userId,
         content: dto.content,
+        status: isSocialCustomer ? MessageStatus.PENDING : MessageStatus.SENT,
       },
     });
 
@@ -105,24 +128,12 @@ export class MessagesService {
       });
     }
 
-    // If this conversation is linked to a Meta customer, send the message back to Messenger/Instagram
+    // If this conversation is linked to an external customer, attempt outbound delivery.
+    // For social channels we persist explicit delivery state:
+    // PENDING -> SENT on success, PENDING -> FAILED on API error.
     try {
-      const fullConversation = await this.prisma.conversation.findFirst({
-        where: { id: conversation.id, orgId: currentUser.orgId },
-        include: { customer: true },
-      });
-
-      const customer = fullConversation?.customer;
       if (customer && customer.source) {
-        if (
-          (
-            [
-              $Enums.Channel.FACEBOOK_MESSENGER,
-              $Enums.Channel.INSTAGRAM,
-              $Enums.Channel.WHATSAPP,
-            ] as string[]
-          ).includes(customer.source)
-        ) {
+        if (isSocialCustomer) {
           // Auto-send outbound messages for Messenger, Instagram, and WhatsApp.
           await this.metaService.sendOutboundTextMessage(
             currentUser.orgId,
@@ -130,6 +141,10 @@ export class MessagesService {
             customer,
             dto.content,
           );
+          await this.prisma.message.updateMany({
+            where: { id: message.id, orgId: currentUser.orgId },
+            data: { status: MessageStatus.SENT },
+          });
         } else if ((customer.source as string) === 'EMAIL' && customer.email) {
           // Auto-send outbound messages for EMAIL
           await this.emailService.sendReply(
@@ -142,9 +157,18 @@ export class MessagesService {
         }
       }
     } catch (err) {
+      if (isSocialCustomer) {
+        await this.prisma.message.updateMany({
+          where: { id: message.id, orgId: currentUser.orgId },
+          data: { status: MessageStatus.FAILED },
+        });
+      }
       this.logger.error(
         `Failed to send outbound Meta message for conversation ${conversation.id}`,
         err as Error,
+      );
+      throw new BadRequestException(
+        'Message saved but delivery failed. Please verify channel connection and try again.',
       );
     }
 

@@ -35,7 +35,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const token = localStorage.getItem('token'); // Matches AuthContext.tsx
     if (!token) return;
 
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const url =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === 'production'
+        ? 'https://api.intrabox.com.ng'
+        : 'http://localhost:3000');
     console.log('Socket: Attempting connection to', url, 'with token', token.substring(0, 10) + '...');
     
     const newSocket = io(url, {

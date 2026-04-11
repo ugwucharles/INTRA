@@ -26,6 +26,11 @@ import { UpdateSocialAccountDto } from './dto/update-social-account.dto';
 export class SocialAccountsController {
   constructor(private readonly service: SocialAccountsService) {}
 
+  @Get('debug-env')
+  debugEnv() {
+    return this.service.debugEnv();
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

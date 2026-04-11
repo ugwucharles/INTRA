@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { countries } from '@/lib/countries';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,7 +24,11 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://api.intrabox.com.ng'
+      : 'http://localhost:3000');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,20 +106,19 @@ export default function RegisterPage() {
               minLength={6}
             />
 
-            <Input
+            <Select
               label="Country"
               value={formData.country}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, country: e.target.value })}
-              required
-              placeholder="United States"
+              onChange={(val) => setFormData({ ...formData, country: val })}
+              options={[{ label: 'Select a country', value: '' }, ...countries.map(c => ({ label: c, value: c }))]}
             />
 
             <Input
               label="Phone Number"
               value={formData.phone}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
               required
-              placeholder="+1 555-0123"
+              placeholder="e.g. 2348000000000"
             />
 
             <Input
@@ -151,9 +156,9 @@ export default function RegisterPage() {
           </p>
           <p className="mt-3 sm:mt-4 text-center text-[11px] text-gray-400 max-w-xs mx-auto">
             By creating an account, you agree to our{' '}
-            <a href="https://docs.google.com/document/d/1neCA3dnCUDCscCMJ7FOeJThW5L-oCDdZAFVM17vyZco/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Terms of Service</a>
+            <Link href="/terms" className="underline hover:text-gray-500">Terms of Service</Link>
             {' '}and{' '}
-            <a href="https://docs.google.com/document/d/1TI3ok_oArJ8p3EgDqyH_NehVEwMrydn6HPZvAiCaxEM/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Privacy Policy</a>.
+            <Link href="/privacy" className="underline hover:text-gray-500">Privacy Policy</Link>.
           </p>
         </div>
       </div>

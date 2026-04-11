@@ -44,12 +44,26 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    console.log('[Google Auth] Callback received from Google');
     const result = await this.authService.loginOrRegisterWithGoogle(
       req.user as any,
     );
-    let frontendUrl = (
-      process.env.FRONTEND_URL || 'http://localhost:3001'
-    ).replace(/\/$/, '');
+    if (result.code) {
+      console.log(
+        `[Google Auth] Generated one-time code: ${result.code.substring(0, 8)}...`,
+      );
+    } else {
+      console.log('[Google Auth] Falling back to direct token redirect');
+    }
+
+    const defaultFrontendUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://intrabox.com.ng'
+        : 'http://localhost:3001';
+    let frontendUrl = (process.env.FRONTEND_URL || defaultFrontendUrl).replace(
+      /\/$/,
+      '',
+    );
     if (
       process.env.NODE_ENV !== 'production' &&
       /^https:\/\/localhost/i.test(frontendUrl)
@@ -59,9 +73,10 @@ export class AuthController {
         'http://localhost',
       );
     }
-    // Redirect with a short-lived, single-use authorization code instead of the JWT.
-    // The frontend exchanges it via POST /auth/google/exchange.
-    const redirectUrl = `${frontendUrl}/auth/google/callback?code=${encodeURIComponent(result.code)}`;
+    const redirectUrl = result.code
+      ? `${frontendUrl}/auth/google/callback?code=${encodeURIComponent(result.code)}`
+      : `${frontendUrl}/auth/google/callback?token=${encodeURIComponent(result.access_token || '')}`;
+    console.log(`[Google Auth] Redirecting to frontend: ${redirectUrl.substring(0, 50)}...`);
     return res.redirect(redirectUrl);
   }
 
@@ -71,11 +86,12 @@ export class AuthController {
    */
   @Post('google/exchange')
   @HttpCode(HttpStatus.OK)
-  exchangeGoogleCode(@Body() body: { code: string }) {
+  async exchangeGoogleCode(@Body() body: { code: string }) {
+    console.log(`[Google Auth] Exchange request received for code: ${body.code?.substring(0, 8)}...`);
     if (!body.code) {
       throw new BadRequestException('Authorization code is required');
     }
-    return this.authService.exchangeGoogleAuthCode(body.code);
+    return await this.authService.exchangeGoogleAuthCode(body.code);
   }
 
   @Get('me')

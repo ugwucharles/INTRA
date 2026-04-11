@@ -16,7 +16,7 @@ import { GoogleAuthGuard } from './google-auth.guard';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
-        expiresIn: '15m',
+        expiresIn: '7d',
       },
     }),
   ],
