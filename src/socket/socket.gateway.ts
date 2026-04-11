@@ -10,12 +10,19 @@ import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 
+const defaultOrigins =
+  process.env.NODE_ENV === 'production'
+    ? 'https://intrabox.com.ng,https://www.intrabox.com.ng'
+    : 'http://localhost:3001,http://localhost:3000,https://intrabox.com.ng,https://www.intrabox.com.ng';
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? defaultOrigins)
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 @WebSocketGateway({
   cors: {
-    origin: (process.env.ALLOWED_ORIGINS || '')
-      .split(',')
-      .map((o) => o.trim())
-      .filter(Boolean),
+    origin: allowedOrigins,
     credentials: true,
   },
 })
