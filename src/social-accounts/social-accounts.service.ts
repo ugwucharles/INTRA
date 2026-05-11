@@ -183,7 +183,6 @@ export class SocialAccountsService {
     ) {
       await this.subscribePageToApp(account.accessToken, account.pageId, [
         'messages',
-        'comments',
       ]);
     }
 
@@ -222,10 +221,12 @@ export class SocialAccountsService {
             'instagram_basic',
             'instagram_manage_messages',
             'pages_show_list',
+            'pages_manage_metadata',
           ]
         : [
             'pages_show_list',
             'pages_messaging',
+            'pages_manage_metadata',
           ];
     const url = new URL('https://www.facebook.com/v19.0/dialog/oauth');
     url.searchParams.set('client_id', appId);
@@ -381,7 +382,7 @@ export class SocialAccountsService {
       await this.subscribePageToApp(
         String(pageWithIg.access_token),
         String(pageWithIg.id),
-        ['messages', 'comments'],
+        ['messages'],
       );
 
       await this.prisma.socialAccount.upsert({

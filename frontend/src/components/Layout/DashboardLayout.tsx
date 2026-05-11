@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -87,6 +87,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+
+  const navItems = useMemo(() => {
+    if (user?.plan?.analytics) return mainNavigation;
+    return mainNavigation.filter((item) => item.name !== 'Analytics');
+  }, [user?.plan?.analytics]);
   const handleNavIconClick = (e: React.MouseEvent) => {
     if (!sidebarCollapsed) return;
     e.preventDefault();
@@ -101,7 +106,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen bg-[#F5F5F5]">
+    <div className="font-sans flex h-screen bg-[#F5F5F5]">
       {/* Sidebar */}
       <aside
         className={`h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-200 ${
@@ -136,7 +141,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         {/* Main Navigation */}
         <nav className="flex-1 px-3 py-4">
           <div className="space-y-1">
-            {mainNavigation.map((item) => {
+            {navItems.map((item) => {
               const isActive = isActiveRoute(item.href);
               return (
                 <Link

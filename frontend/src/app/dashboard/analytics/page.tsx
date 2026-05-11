@@ -86,6 +86,10 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const load = async () => {
+      if (user?.plan && !user.plan.analytics) {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         let convs, customers, staffList;
@@ -212,6 +216,37 @@ export default function AnalyticsPage() {
         <DashboardLayout>
           <div className="h-full flex items-center justify-center">
             <div className="text-gray-500">Loading analytics...</div>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (user?.plan && !user.plan.analytics) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex h-full items-center justify-center bg-gray-50 p-8">
+            <div className="max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+              <h1 className="text-xl font-semibold text-gray-900">Analytics</h1>
+              <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                Advanced analytics are included on the Business plan. This workspace is on{' '}
+                <span className="font-medium text-gray-900">
+                  {user.subscriptionPlan === 'BUSINESS'
+                    ? 'Business'
+                    : user.subscriptionPlan === 'GROWTH'
+                      ? 'Growth'
+                      : user.subscriptionPlan === 'STARTER'
+                        ? 'Starter'
+                        : 'Starter'}
+                </span>
+                .
+              </p>
+              <p className="mt-4 text-xs text-gray-500">
+                Upgrade when billing is connected to your account so the product always matches
+                what you pay for.
+              </p>
+            </div>
           </div>
         </DashboardLayout>
       </ProtectedRoute>

@@ -4,6 +4,17 @@ const API_BASE_URL =
     ? 'https://api.intrabox.com.ng'
     : 'http://localhost:3000');
 
+export type SubscriptionPlan = 'STARTER' | 'GROWTH' | 'BUSINESS';
+
+export type PlanCapabilities = {
+  maxSeats: number | null;
+  departments: boolean;
+  smartRouting: boolean;
+  escalation: boolean;
+  staffRating: boolean;
+  analytics: boolean;
+};
+
 export interface LoginDto {
   email: string;
   password: string;
@@ -49,6 +60,8 @@ export interface User {
     pending: number;
   };
   departments?: string[];
+  subscriptionPlan?: SubscriptionPlan;
+  plan?: PlanCapabilities;
 }
 
 export interface Customer {

@@ -9,7 +9,8 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterAdminDto } from './dto/auth.dto';
-import { UserRole } from '@prisma/client';
+import { SubscriptionPlan, UserRole } from '@prisma/client';
+import { PlansService } from '../plans/plans.service';
 import { JwtPayload } from './jwt.strategy';
 import { Role } from './role.enum';
 import { Profile } from 'passport-google-oauth20';
@@ -21,7 +22,15 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly plans: PlansService,
   ) {}
+
+  private planSnapshot(plan: SubscriptionPlan) {
+    return {
+      subscriptionPlan: plan,
+      plan: this.plans.capabilities(plan),
+    };
+  }
 
   async registerAdmin(dto: RegisterAdminDto) {
     const { organizationName, name, email, password } = dto;
@@ -68,6 +77,8 @@ export class AuthService {
           user.role,
         );
 
+        const plan =
+          organization.subscriptionPlan ?? SubscriptionPlan.STARTER;
         const sanitizedUser = {
           id: user.id,
           orgId: user.orgId,
@@ -77,6 +88,7 @@ export class AuthService {
           isActive: user.isActive,
           isOnline: user.isOnline,
           orgOnboarded: organization.isOnboarded,
+          ...this.planSnapshot(plan),
         };
 
         return {
@@ -112,7 +124,16 @@ export class AuthService {
 
     const users = await this.prisma.user.findMany({
       where: { email, isActive: true, ...(orgId ? { orgId } : {}) },
-      include: { org: { select: { id: true, isOnboarded: true, name: true } } },
+      include: {
+        org: {
+          select: {
+            id: true,
+            isOnboarded: true,
+            name: true,
+            subscriptionPlan: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -152,6 +173,8 @@ export class AuthService {
 
     const accessToken = await this.signToken(user.id, user.orgId, user.role);
 
+    const plan =
+      user.org?.subscriptionPlan ?? SubscriptionPlan.STARTER;
     const sanitizedUser = {
       id: user.id,
       orgId: user.orgId,
@@ -165,6 +188,7 @@ export class AuthService {
       level: user.level,
       orgName: user.org?.name,
       orgOnboarded: user.org?.isOnboarded ?? false,
+      ...this.planSnapshot(plan),
     };
 
     return {
@@ -179,12 +203,19 @@ export class AuthService {
         id: currentUser.userId,
         orgId: currentUser.orgId,
       },
-      include: { org: { select: { isOnboarded: true, name: true } } },
+      include: {
+        org: {
+          select: { isOnboarded: true, name: true, subscriptionPlan: true },
+        },
+      },
     });
 
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
+
+    const plan =
+      user.org?.subscriptionPlan ?? SubscriptionPlan.STARTER;
 
     return {
       id: user.id,
@@ -200,6 +231,7 @@ export class AuthService {
       createdAt: user.createdAt,
       orgName: user.org?.name,
       orgOnboarded: user.org?.isOnboarded ?? false,
+      ...this.planSnapshot(plan),
     };
   }
 
@@ -211,12 +243,19 @@ export class AuthService {
 
     const user = await this.prisma.user.findFirst({
       where: { id: currentUser.userId, orgId: currentUser.orgId },
-      include: { org: { select: { isOnboarded: true, name: true } } },
+      include: {
+        org: {
+          select: { isOnboarded: true, name: true, subscriptionPlan: true },
+        },
+      },
     });
 
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
+
+    const plan =
+      user.org?.subscriptionPlan ?? SubscriptionPlan.STARTER;
 
     return {
       id: user.id,
@@ -229,6 +268,7 @@ export class AuthService {
       createdAt: user.createdAt,
       orgName: user.org?.name,
       orgOnboarded: user.org?.isOnboarded ?? false,
+      ...this.planSnapshot(plan),
     };
   }
 
@@ -352,7 +392,11 @@ export class AuthService {
 
     const finalUser = await this.prisma.user.findFirst({
       where: { id: user.id, orgId: user.orgId },
-      include: { org: { select: { isOnboarded: true, name: true } } },
+      include: {
+        org: {
+          select: { isOnboarded: true, name: true, subscriptionPlan: true },
+        },
+      },
     });
 
     const accessToken = await this.signToken(
@@ -360,6 +404,9 @@ export class AuthService {
       finalUser!.orgId,
       finalUser!.role,
     );
+
+    const plan =
+      finalUser!.org?.subscriptionPlan ?? SubscriptionPlan.STARTER;
 
     const userData = {
       id: finalUser!.id,
@@ -374,6 +421,7 @@ export class AuthService {
       level: finalUser!.level,
       orgName: finalUser!.org?.name,
       orgOnboarded: finalUser!.org?.isOnboarded ?? false,
+      ...this.planSnapshot(plan),
     };
 
     // Pass the token directly — the frontend callback page handles ?token=xxx

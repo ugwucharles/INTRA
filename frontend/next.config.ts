@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  /* Next.js 16 defaults to Turbopack; silence conflict with custom webpack tweaks */
+  turbopack: {},
   /* Frontend config */
   compiler: {
     styledComponents: true,

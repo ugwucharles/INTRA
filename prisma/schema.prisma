@@ -15,6 +15,8 @@ model Organization {
   country           String?
   isOnboarded       Boolean            @default(false)
   phone             String?
+  /// Billing tier: enforces seats and feature access (see PlansService).
+  subscriptionPlan  SubscriptionPlan   @default(STARTER)
   auditLogs         AuditLog[]
   autoReplies       AutoReply[]
   conversations     Conversation[]
@@ -273,6 +275,12 @@ model SavedReply {
 enum UserRole {
   ADMIN
   AGENT
+}
+
+enum SubscriptionPlan {
+  STARTER
+  GROWTH
+  BUSINESS
 }
 
 enum ConversationStatus {

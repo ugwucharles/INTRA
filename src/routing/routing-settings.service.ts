@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PlansService } from '../plans/plans.service';
 import { FallbackBehavior, RouteTo, RoutingSettings } from '@prisma/client';
 import type { JwtPayload } from '../auth/jwt.strategy';
 
@@ -13,7 +14,10 @@ export interface UpdateRoutingSettingsDto {
 
 @Injectable()
 export class RoutingSettingsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly plans: PlansService,
+  ) {}
 
   async getOrCreate(orgId: string): Promise<RoutingSettings> {
     let settings = await this.prisma.routingSettings.findFirst({
@@ -38,6 +42,13 @@ export class RoutingSettingsService {
     dto: UpdateRoutingSettingsDto,
   ): Promise<RoutingSettings> {
     const existing = await this.getOrCreate(currentUser.orgId);
+
+    if (dto.autoRoutingEnabled === true) {
+      await this.plans.assertSmartRoutingSettingsAllowed(
+        currentUser.orgId,
+        true,
+      );
+    }
 
     // orgId is unique for RoutingSettings, but we still use updateMany to satisfy tenant enforcement.
     await this.prisma.routingSettings.updateMany({

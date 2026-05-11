@@ -6,9 +6,16 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { RoutingModule } from '../routing/routing.module';
 import { SocketModule } from '../socket/socket.module';
 import { SocialAccountsModule } from '../social-accounts/social-accounts.module';
+import { PlansModule } from '../plans/plans.module';
 
 @Module({
-  imports: [PrismaModule, RoutingModule, SocketModule, SocialAccountsModule],
+  imports: [
+    PrismaModule,
+    PlansModule,
+    RoutingModule,
+    SocketModule,
+    SocialAccountsModule,
+  ],
   controllers: [MetaController],
   providers: [MetaService, MetaOutboundQueue],
   exports: [MetaService],

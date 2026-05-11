@@ -13,6 +13,7 @@ import { UserRole, ConversationStatus, $Enums } from '@prisma/client';
 import { MetaService } from '../meta/meta.service';
 import { EmailService } from '../email/email.service';
 import { SocketGateway } from '../socket/socket.gateway';
+import { PlansService } from '../plans/plans.service';
 
 const RATING_PROMPT =
   'How would you rate your experience today? Please reply with a number from 1 to 10.';
@@ -26,6 +27,7 @@ export class ConversationsService {
     private readonly metaService: MetaService,
     private readonly emailService: EmailService,
     private readonly socketGateway: SocketGateway,
+    private readonly plans: PlansService,
   ) {}
 
   async createConversation(
@@ -353,11 +355,14 @@ export class ConversationsService {
       throw new ForbiddenException('You are not assigned to this conversation');
     }
 
+    const caps = await this.plans.getCapabilitiesForOrg(currentUser.orgId);
+    const awaitingRating = caps.staffRating;
+
     await this.prisma.conversation.updateMany({
       where: { id: conversation.id, orgId: currentUser.orgId },
       data: {
         status: ConversationStatus.RESOLVED,
-        awaitingRating: true,
+        awaitingRating,
         resolvedBy: currentUser.userId,
       },
     });
@@ -376,47 +381,47 @@ export class ConversationsService {
       },
     });
 
-    // Send the rating prompt to the customer on their channel
-    try {
-      const customer = conversation.customer;
-      if (customer?.source) {
-        if (
-          (
-            [
-              $Enums.Channel.FACEBOOK_MESSENGER,
-              $Enums.Channel.INSTAGRAM,
-              $Enums.Channel.WHATSAPP,
-            ] as string[]
-          ).includes(customer.source)
-        ) {
-          await this.metaService.sendOutboundTextMessage(
-            currentUser.orgId,
-            conversation.id,
-            customer,
-            RATING_PROMPT,
-          );
-        } else if (customer.source === $Enums.Channel.EMAIL && customer.email) {
-          // Create a placeholder message record for idempotency then send via SMTP
-          const msg = await this.prisma.message.create({
-            data: {
-              orgId: currentUser.orgId,
-              conversationId: conversation.id,
-              senderType: 'STAFF',
-              senderId: currentUser.userId,
-              content: RATING_PROMPT,
-            },
-          });
-          await this.emailService.sendReply(
-            currentUser.orgId,
-            conversation.id,
-            customer.email,
-            RATING_PROMPT,
-            msg.id,
-          );
+    if (awaitingRating) {
+      try {
+        const customer = conversation.customer;
+        if (customer?.source) {
+          if (
+            (
+              [
+                $Enums.Channel.FACEBOOK_MESSENGER,
+                $Enums.Channel.INSTAGRAM,
+                $Enums.Channel.WHATSAPP,
+              ] as string[]
+            ).includes(customer.source)
+          ) {
+            await this.metaService.sendOutboundTextMessage(
+              currentUser.orgId,
+              conversation.id,
+              customer,
+              RATING_PROMPT,
+            );
+          } else if (customer.source === $Enums.Channel.EMAIL && customer.email) {
+            const msg = await this.prisma.message.create({
+              data: {
+                orgId: currentUser.orgId,
+                conversationId: conversation.id,
+                senderType: 'STAFF',
+                senderId: currentUser.userId,
+                content: RATING_PROMPT,
+              },
+            });
+            await this.emailService.sendReply(
+              currentUser.orgId,
+              conversation.id,
+              customer.email,
+              RATING_PROMPT,
+              msg.id,
+            );
+          }
         }
+      } catch (err) {
+        this.logger.error('Failed to send rating prompt', err as Error);
       }
-    } catch (err) {
-      this.logger.error('Failed to send rating prompt', err as Error);
     }
 
     return resolved;

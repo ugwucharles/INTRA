@@ -13,6 +13,7 @@ import { RoutingSettingsService } from '../routing/routing-settings.service';
 import { AutoReplyService } from '../auto-reply/auto-reply.service';
 import { SocketGateway } from '../socket/socket.gateway';
 import { SocialAccountsService } from '../social-accounts/social-accounts.service';
+import { PlansService } from '../plans/plans.service';
 
 @Injectable()
 export class MetaService {
@@ -25,6 +26,7 @@ export class MetaService {
     private readonly autoReplyService: AutoReplyService,
     private readonly socketGateway: SocketGateway,
     private readonly socialAccounts: SocialAccountsService,
+    private readonly plans: PlansService,
   ) {}
 
   async handleWebhook(body: any) {
@@ -726,11 +728,12 @@ export class MetaService {
       const settings = await this.routingSettingsService.getOrCreate(orgId);
       const settingsMeta: any = settings.metadata ?? {};
       const sendFirstMessage = settingsMeta.sendFirstMessage ?? true;
-      const sendDepartmentQuestion =
-        settingsMeta.sendDepartmentQuestion ?? true;
       const reaskOnInvalidSelection =
         settingsMeta.reaskOnInvalidSelection ?? true;
       const isAfterHours = this.computeIsAfterHours(settings);
+      const planCaps = await this.plans.getCapabilitiesForOrg(orgId);
+      const allowDepartmentMenu =
+        (settingsMeta.sendDepartmentQuestion ?? true) && planCaps.departments;
 
       const totalMessages = await this.prisma.message.count({
         where: { conversationId: conversation.id },
@@ -758,7 +761,7 @@ export class MetaService {
         }
 
         if (
-          sendDepartmentQuestion &&
+          allowDepartmentMenu &&
           !conversation.departmentId &&
           !hadRoutingQuestionAlreadySent
         ) {
@@ -804,7 +807,7 @@ export class MetaService {
         if (
           routingOutcome?.invalidSelection &&
           reaskOnInvalidSelection &&
-          sendDepartmentQuestion
+          allowDepartmentMenu
         ) {
           const questionReplies = await this.autoReplyService.getReplies(
             orgId,
@@ -821,7 +824,7 @@ export class MetaService {
           }
         }
 
-        if (routingOutcome?.noAgentAvailable) {
+        if (routingOutcome?.noAgentAvailable && planCaps.escalation) {
           const noAgentReplies = await this.autoReplyService.getReplies(
             orgId,
             AutoReplyTrigger.NO_AGENT_AVAILABLE,
@@ -1030,11 +1033,13 @@ export class MetaService {
     const settings = await this.routingSettingsService.getOrCreate(orgId);
     const settingsMeta: any = settings.metadata ?? {};
     const sendFirstMessage = settingsMeta.sendFirstMessage ?? true;
-    const sendDepartmentQuestion = settingsMeta.sendDepartmentQuestion ?? true;
     const reaskOnInvalidSelection =
       settingsMeta.reaskOnInvalidSelection ?? true;
 
     const isAfterHours = this.computeIsAfterHours(settings);
+    const planCaps = await this.plans.getCapabilitiesForOrg(orgId);
+    const allowDepartmentMenu =
+      (settingsMeta.sendDepartmentQuestion ?? true) && planCaps.departments;
 
     // Determine context for auto-replies
     const totalMessages = await this.prisma.message.count({
@@ -1066,7 +1071,7 @@ export class MetaService {
       // We only send the question the first time (per conversation), and we DO NOT treat the
       // same inbound message that triggered the question as a department selection.
       if (
-        sendDepartmentQuestion &&
+        allowDepartmentMenu &&
         !conversation.departmentId &&
         !hadRoutingQuestionAlreadySent
       ) {
@@ -1118,7 +1123,7 @@ export class MetaService {
       if (
         routingOutcome?.invalidSelection &&
         reaskOnInvalidSelection &&
-        sendDepartmentQuestion
+        allowDepartmentMenu
       ) {
         const questionReplies = await this.autoReplyService.getReplies(
           orgId,
@@ -1134,7 +1139,7 @@ export class MetaService {
         }
       }
 
-      if (routingOutcome?.noAgentAvailable) {
+      if (routingOutcome?.noAgentAvailable && planCaps.escalation) {
         const noAgentReplies = await this.autoReplyService.getReplies(
           orgId,
           AutoReplyTrigger.NO_AGENT_AVAILABLE,
@@ -1160,6 +1165,7 @@ export class MetaService {
     resolvedBy: string | null,
     text: string,
   ): Promise<void> {
+    const { staffRating } = await this.plans.getCapabilitiesForOrg(orgId);
     const trimmed = text.trim();
     const rating = Number.parseInt(trimmed, 10);
 
@@ -1183,7 +1189,7 @@ export class MetaService {
         },
       });
 
-      if (resolvedBy) {
+      if (resolvedBy && staffRating) {
         await tx.user.updateMany({
           where: {
             id: resolvedBy,

@@ -7,6 +7,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { RoutingSettingsService } from './routing-settings.service';
+import { PlansService } from '../plans/plans.service';
 
 interface RoutingParams {
   orgId: string;
@@ -29,6 +30,7 @@ export class RoutingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly routingSettingsService: RoutingSettingsService,
+    private readonly plans: PlansService,
   ) {}
 
   /**
@@ -42,6 +44,11 @@ export class RoutingService {
     params: RoutingParams,
   ): Promise<RoutingOutcome | null> {
     const { orgId, conversationId, text } = params;
+
+    const caps = await this.plans.getCapabilitiesForOrg(orgId);
+    if (!caps.smartRouting) {
+      return null;
+    }
 
     const conversation = await this.prisma.conversation.findFirst({
       where: { id: conversationId, orgId },

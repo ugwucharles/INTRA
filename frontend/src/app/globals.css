@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* Hide Next.js Dev Indicator for Professional Screenshots */
@@ -61,7 +60,8 @@ div[style*="position: fixed"][style*="bottom: 0px"][style*="right: 0px"] {
   --color-orange-500: var(--primary);
   --color-orange-600: var(--primary-dark);
   --color-orange-700: #000000;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, 'Times New Roman', serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -73,7 +73,6 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;

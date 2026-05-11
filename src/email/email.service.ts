@@ -12,6 +12,7 @@ import { simpleParser } from 'mailparser';
 import * as nodemailer from 'nodemailer';
 import { ConversationStatus, SenderType, MessageStatus } from '@prisma/client';
 import { SocketGateway } from '../socket/socket.gateway';
+import { PlansService } from '../plans/plans.service';
 
 @Injectable()
 export class EmailService implements OnModuleInit, OnModuleDestroy {
@@ -26,6 +27,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly routingService: RoutingService,
     private readonly socketGateway: SocketGateway,
+    private readonly plans: PlansService,
   ) {}
 
   async onModuleInit() {
@@ -526,6 +528,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     resolvedBy: string | null,
     text: string,
   ): Promise<void> {
+    const { staffRating } = await this.plans.getCapabilitiesForOrg(orgId);
     const rating = this.extractRatingFromEmailText(text);
     if (!rating) {
       this.logger.log(
@@ -548,8 +551,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
         },
       });
 
-      // 1. Update the staff member's rating stats if they were assigned
-      if (resolvedBy) {
+      if (resolvedBy && staffRating) {
         await tx.user.updateMany({
           where: { id: resolvedBy, orgId },
           data: {

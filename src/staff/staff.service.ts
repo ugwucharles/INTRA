@@ -9,10 +9,14 @@ import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { JwtPayload } from '../auth/jwt.strategy';
 import { UserRole } from '@prisma/client';
+import { PlansService } from '../plans/plans.service';
 
 @Injectable()
 export class StaffService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly plans: PlansService,
+  ) {}
 
   async createStaff(currentUser: JwtPayload, dto: CreateStaffDto) {
     const { name, email, password } = dto;
@@ -20,6 +24,8 @@ export class StaffService {
     if (!name || !email || !password) {
       throw new BadRequestException('Name, email and password are required');
     }
+
+    await this.plans.assertCanAddSeat(currentUser.orgId);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -130,7 +136,12 @@ export class StaffService {
     if (dto.name !== undefined) updateData.name = dto.name;
     if (dto.email !== undefined) updateData.email = dto.email;
     if (dto.role !== undefined) updateData.role = dto.role as UserRole;
-    if (dto.isActive !== undefined) updateData.isActive = dto.isActive;
+    if (dto.isActive !== undefined) {
+      if (dto.isActive === true && staff.isActive === false) {
+        await this.plans.assertCanAddSeat(currentUser.orgId);
+      }
+      updateData.isActive = dto.isActive;
+    }
 
     if (dto.password) {
       updateData.password = await bcrypt.hash(dto.password, 10);

@@ -7,10 +7,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload } from '../auth/jwt.strategy';
 import { UserRole } from '@prisma/client';
 import { TenantContext } from '../tenancy/tenant-context';
+import { PlansService } from '../plans/plans.service';
 
 @Injectable()
 export class DepartmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly plans: PlansService,
+  ) {}
 
   async listDepartments(currentUser: JwtPayload) {
     const departments = await this.prisma.department.findMany({
@@ -37,6 +41,8 @@ export class DepartmentsService {
     if (!trimmed) {
       throw new BadRequestException('Department name is required');
     }
+
+    await this.plans.assertDepartmentsEnabled(currentUser.orgId);
 
     const existing = await this.prisma.department.findFirst({
       where: { orgId: currentUser.orgId, name: trimmed },
@@ -101,6 +107,8 @@ export class DepartmentsService {
     if (!department) {
       throw new NotFoundException('Department not found');
     }
+
+    await this.plans.assertDepartmentsEnabled(currentUser.orgId);
 
     // Validate users belong to the same org and are agents
     if (userIds.length > 0) {

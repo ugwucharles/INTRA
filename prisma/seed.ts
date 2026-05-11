@@ -1,13 +1,8 @@
 import 'dotenv/config';
 import { PrismaClient, UserRole, Channel, TagType, ConversationStatus, SenderType } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
   if (process.env.NODE_ENV === 'production') {
@@ -166,6 +161,7 @@ async function main() {
   // Customer tags
   await prisma.customerTag.create({
     data: {
+      orgId: org.id,
       customerId: instaCustomer.id,
       tagId: vipCustomerTag.id,
     },
@@ -183,11 +179,13 @@ async function main() {
       messages: {
         create: [
           {
+            orgId: org.id,
             senderType: SenderType.CUSTOMER,
             content: 'Hey, I found you on Instagram. I want to know more about your pricing.',
             externalId: 'msg-insta-1',
           },
           {
+            orgId: org.id,
             senderType: SenderType.STAFF,
             senderId: agentBob.id,
             content: 'Hi John! Happy to help – what are you looking to do with INTRA?',
@@ -198,9 +196,11 @@ async function main() {
       tags: {
         create: [
           {
+            orgId: org.id,
             tagId: urgentTag.id,
           },
           {
+            orgId: org.id,
             tagId: salesLeadTag.id,
           },
         ],
@@ -219,11 +219,13 @@ async function main() {
       messages: {
         create: [
           {
+            orgId: org.id,
             senderType: SenderType.CUSTOMER,
             content: 'Hi, I have an issue with my last order.',
             externalId: 'msg-fb-1',
           },
           {
+            orgId: org.id,
             senderType: SenderType.STAFF,
             senderId: agentCarol.id,
             content: 'Hi Sarah, I am sorry to hear that. Can you send me your order ID?',
@@ -234,6 +236,7 @@ async function main() {
       tags: {
         create: [
           {
+            orgId: org.id,
             tagId: urgentTag.id,
           },
         ],
