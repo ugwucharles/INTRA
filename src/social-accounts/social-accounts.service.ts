@@ -224,22 +224,29 @@ export class SocialAccountsService {
       'business_management',
     ];
 
+    const configId = process.env.META_LOGIN_FOR_BUSINESS_CONFIG_ID?.trim();
+
     const url = new URL('https://www.facebook.com/v19.0/dialog/oauth');
     url.searchParams.set('client_id', appId);
     url.searchParams.set('redirect_uri', this.oauthRedirectUri);
     url.searchParams.set('state', state);
     url.searchParams.set('response_type', 'code');
-    url.searchParams.set('scope', scopes.join(','));
+
+    if (configId) {
+      url.searchParams.set('config_id', configId);
+    } else {
+      url.searchParams.set('scope', scopes.join(','));
+    }
 
     console.log(`[Meta OAuth] Starting OAuth flow for ${channel}`);
-    console.log(`[Meta OAuth] mode=login_for_business(scope)`);
+    console.log(`[Meta OAuth] mode=${configId ? 'login_for_business(config_id)' : 'login_for_business(scope)'}`);
     console.log(`[Meta OAuth] Using redirect_uri: "${this.oauthRedirectUri}"`);
     console.log(`[Meta OAuth] Full URL: ${url.toString().substring(0, 100)}...`);
 
     return {
       url: url.toString(),
       redirectUri: this.oauthRedirectUri,
-      scope: scopes,
+      scope: configId ? [] : scopes,
     };
   }
 
