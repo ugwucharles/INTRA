@@ -333,10 +333,13 @@ export class MetaService {
     try {
       const url = new URL(`https://graph.facebook.com/v19.0/${psid}`);
       url.searchParams.set('access_token', accessToken);
-      url.searchParams.set('fields', 'name,first_name,last_name,profile_pic');
+      // Meta deprecated first_name and last_name in v19+. Asking for them throws a 400 error.
+      url.searchParams.set('fields', 'name,profile_pic');
 
       const res = await fetch(url.toString());
       if (!res.ok) {
+        const errorBody = await res.text().catch(() => '');
+        this.logger.warn(`Failed to fetch Messenger profile for psid ${psid}. HTTP ${res.status}: ${errorBody}`);
         return { name: null, avatarUrl: null };
       }
 
@@ -345,21 +348,10 @@ export class MetaService {
         return { name: null, avatarUrl: null };
       }
 
-      const firstName =
-        typeof data.first_name === 'string' ? data.first_name.trim() : '';
-      const lastName =
-        typeof data.last_name === 'string' ? data.last_name.trim() : '';
-      let name = `${firstName} ${lastName}`.trim();
+      let name = typeof data.name === 'string' ? data.name.trim() : null;
+      const avatarUrl = typeof data.profile_pic === 'string' ? data.profile_pic : null;
 
-      // Fallback to name field if combined is empty
-      if (!name && typeof data.name === 'string') {
-        name = data.name.trim();
-      }
-
-      const avatarUrl =
-        typeof data.profile_pic === 'string' ? data.profile_pic : null;
-
-      return { name: name || null, avatarUrl };
+      return { name, avatarUrl };
     } catch (err) {
       this.logger.error('Failed to fetch Messenger profile', err as Error);
       return { name: null, avatarUrl: null };
@@ -391,6 +383,8 @@ export class MetaService {
 
       const res = await fetch(url.toString());
       if (!res.ok) {
+        const errorBody = await res.text().catch(() => '');
+        this.logger.warn(`Failed to fetch Instagram profile for igSenderId ${igSenderId}. HTTP ${res.status}: ${errorBody}`);
         return { name: null, avatarUrl: null };
       }
 
