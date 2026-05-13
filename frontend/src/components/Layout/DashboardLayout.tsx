@@ -121,7 +121,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               alt="Logo"
               width={140}
               height={40}
-              className={`${sidebarCollapsed ? 'h-6 w-6 object-contain' : 'h-8 w-auto'} mix-blend-multiply opacity-95`}
+              className={sidebarCollapsed ? 'h-6 w-6 object-contain' : 'h-8 w-auto'}
             />
           </Link>
           {!sidebarCollapsed && (

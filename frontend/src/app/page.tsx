@@ -63,7 +63,7 @@ export default function LandingPage() {
               alt="INTRA"
               width={100}
               height={32}
-              className="h-8 w-auto mix-blend-multiply grayscale brightness-[1.15] contrast-[1.2]"
+              className="h-8 w-auto"
             />
           </Link>
 
@@ -303,20 +303,34 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Stats Section — Clean, powerful numbers */}
+        {/* Proof points — short headline + plain-language support */}
         <section className="border-y border-neutral-200/80 bg-neutral-900 py-16 text-white sm:py-24">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:gap-6">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:gap-8">
             {[
-              { value: '< 60s', label: 'First response target' },
-              { value: '4+', label: 'Native channels' },
-              { value: 'Real-time', label: 'Live queue updates' },
-              { value: '1 view', label: 'Unified timeline' },
+              {
+                headline: 'Under a minute',
+                support: 'Built for teams that treat first reply as the moment you earn trust.',
+              },
+              {
+                headline: 'Four native channels',
+                support: 'WhatsApp, Messenger, Instagram DMs, and email—no bolt-on widgets.',
+              },
+              {
+                headline: 'Live by default',
+                support: 'Queue, assignments, and handoffs update the moment they change.',
+              },
+              {
+                headline: 'One conversation view',
+                support: 'Every message and channel in a single timeline, with full context.',
+              },
             ].map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-4xl font-bold tracking-tight sm:text-5xl">
-                  {s.value}
+              <div key={s.headline} className="text-center">
+                <p className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                  {s.headline}
                 </p>
-                <p className="mt-3 text-sm font-medium uppercase tracking-widest text-neutral-400">{s.label}</p>
+                <p className="mx-auto mt-3 max-w-[18rem] text-sm leading-relaxed text-neutral-400">
+                  {s.support}
+                </p>
               </div>
             ))}
           </div>

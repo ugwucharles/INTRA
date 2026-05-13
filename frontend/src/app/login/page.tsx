@@ -46,7 +46,7 @@ export default function LoginPage() {
               alt="Logo"
               width={120}
               height={40}
-              className="h-10 w-auto mix-blend-multiply opacity-95"
+              className="h-10 w-auto"
             />
           </div>
           <p className="text-sm sm:text-base text-gray-600">Welcome back to your CRM</p>

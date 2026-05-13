@@ -215,26 +215,24 @@ export class SocialAccountsService {
       nonce: crypto.randomUUID(),
       ts: Date.now(),
     });
-    const scopes =
-      channel === 'INSTAGRAM'
-        ? [
-            'instagram_basic',
-            'instagram_manage_messages',
-            'pages_show_list',
-            'pages_manage_metadata',
-          ]
-        : [
-            'pages_show_list',
-            'pages_messaging',
-            'pages_manage_metadata',
-          ];
+    const scopes = [
+      'pages_show_list',
+      'pages_messaging',
+      'pages_manage_metadata',
+      'instagram_basic',
+      'instagram_manage_messages',
+      'business_management',
+    ];
+
     const url = new URL('https://www.facebook.com/v19.0/dialog/oauth');
     url.searchParams.set('client_id', appId);
     url.searchParams.set('redirect_uri', this.oauthRedirectUri);
     url.searchParams.set('state', state);
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', scopes.join(','));
+
     console.log(`[Meta OAuth] Starting OAuth flow for ${channel}`);
+    console.log(`[Meta OAuth] mode=login_for_business(scope)`);
     console.log(`[Meta OAuth] Using redirect_uri: "${this.oauthRedirectUri}"`);
     console.log(`[Meta OAuth] Full URL: ${url.toString().substring(0, 100)}...`);
 
@@ -284,13 +282,37 @@ export class SocialAccountsService {
       return `${this.frontendUrl}/dashboard/channels?connect=error&msg=${encodeURIComponent(errorMsg)}`;
     }
     const tokenData: any = await tokenRes.json();
-    const userAccessToken: string | undefined = tokenData?.access_token;
-    if (!userAccessToken) {
+    const shortLivedUserToken: string | undefined = tokenData?.access_token;
+    if (!shortLivedUserToken) {
       throw new BadRequestException('OAuth access token missing');
     }
 
+    // Exchange short-lived user token for long-lived user token
+    const longLivedTokenUrl = new URL('https://graph.facebook.com/v19.0/oauth/access_token');
+    longLivedTokenUrl.searchParams.set('grant_type', 'fb_exchange_token');
+    longLivedTokenUrl.searchParams.set('client_id', appId);
+    longLivedTokenUrl.searchParams.set('client_secret', appSecret);
+    longLivedTokenUrl.searchParams.set('fb_exchange_token', shortLivedUserToken);
+
+    let finalUserAccessToken = shortLivedUserToken;
+    try {
+      const longLivedRes = await fetch(longLivedTokenUrl.toString());
+      if (longLivedRes.ok) {
+        const longLivedData: any = await longLivedRes.json();
+        if (longLivedData?.access_token) {
+          finalUserAccessToken = longLivedData.access_token;
+          this.logger.log('Successfully exchanged for a long-lived user token');
+        }
+      } else {
+        const body = await longLivedRes.text().catch(() => '');
+        this.logger.warn(`Failed to exchange for long-lived token: ${body}. Falling back to short-lived token.`);
+      }
+    } catch (err) {
+      this.logger.warn('Error fetching long-lived token, falling back to short-lived user token', err);
+    }
+
     const pagesUrl = new URL('https://graph.facebook.com/v19.0/me/accounts');
-    pagesUrl.searchParams.set('access_token', userAccessToken);
+    pagesUrl.searchParams.set('access_token', finalUserAccessToken);
     pagesUrl.searchParams.set(
       'fields',
       'id,name,access_token,instagram_business_account{id,username,name}',
@@ -530,6 +552,10 @@ export class SocialAccountsService {
       META_APP_SECRET: !!process.env.META_APP_SECRET,
       INSTAGRAM_APP_SECRET: !!process.env.INSTAGRAM_APP_SECRET,
       REDIRECT_URI: this.oauthRedirectUri,
+      META_LOGIN_FOR_BUSINESS_CONFIG_ID:
+        !!process.env.META_LOGIN_FOR_BUSINESS_CONFIG_ID?.trim(),
+      META_LOGIN_FOR_BUSINESS_CONFIG_ID_INSTAGRAM:
+        !!process.env.META_LOGIN_FOR_BUSINESS_CONFIG_ID_INSTAGRAM?.trim(),
       FRONTEND_URL: this.frontendUrl,
       TIMESTAMP: new Date().toISOString(),
     };

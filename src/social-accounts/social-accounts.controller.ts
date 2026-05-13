@@ -85,10 +85,26 @@ export class SocialAccountsController {
   async oauthCallback(
     @Query('code') code: string | undefined,
     @Query('state') state: string | undefined,
+    @Query('error') oauthError: string | undefined,
+    @Query('error_description') oauthErrorDescription: string | undefined,
+    @Query('error_reason') oauthErrorReason: string | undefined,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const frontendBase =
+      process.env.FRONTEND_URL || 'http://localhost:3001';
+
+    if (oauthError) {
+      const pieces = [oauthError, oauthErrorReason, oauthErrorDescription].filter(
+        Boolean,
+      ) as string[];
+      const msg = pieces.join(' — ') || 'OAuth failed';
+      return {
+        url: `${frontendBase}/dashboard/channels?connect=error&msg=${encodeURIComponent(msg)}`,
+      };
+    }
+
     if (!code || !state) {
-      const fallback = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/dashboard/channels?connect=error`;
+      const fallback = `${frontendBase}/dashboard/channels?connect=error&msg=${encodeURIComponent('Missing authorization code or state from Meta')}`;
       return { url: fallback };
     }
     try {
@@ -98,7 +114,7 @@ export class SocialAccountsController {
       res.statusCode = 302;
       const msg = err?.message || 'Failed to connect';
       return {
-        url: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/dashboard/channels?connect=error&msg=${encodeURIComponent(msg)}`,
+        url: `${frontendBase}/dashboard/channels?connect=error&msg=${encodeURIComponent(msg)}`,
       };
     }
   }

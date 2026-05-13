@@ -6,7 +6,8 @@
     "dev": "next dev -p 3001 --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "strip-logo-white": "node scripts/strip-logo-white.cjs"
   },
   "dependencies": {
     "next": "16.1.1",
@@ -22,6 +23,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
