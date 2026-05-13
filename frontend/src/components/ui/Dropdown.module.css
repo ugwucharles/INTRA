@@ -103,7 +103,9 @@
   min-width: 100%;
   width: max-content;
   max-width: 85vw;
-  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid #cccccc;
   border-top: none;
   /* Merges visually with link */

@@ -53,8 +53,8 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-            <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-sm border border-gray-100 ios-appear">
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-50 px-4">
+            <div className="max-w-md w-full max-h-[90vh] overflow-y-auto bg-white rounded-3xl p-8 shadow-sm border border-gray-100 ios-appear custom-scrollbar">
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
                     <p className="text-gray-500 text-sm">Please provide some details about your business to get started.</p>
