@@ -221,7 +221,6 @@ export class SocialAccountsService {
       'pages_manage_metadata',
       'instagram_basic',
       'instagram_manage_messages',
-      'business_management',
     ];
 
     const configId = process.env.META_LOGIN_FOR_BUSINESS_CONFIG_ID?.trim();
