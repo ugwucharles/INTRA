@@ -156,9 +156,9 @@ export default function RegisterPage() {
           </p>
           <p className="mt-3 sm:mt-4 text-center text-[11px] text-gray-400 max-w-xs mx-auto">
             By creating an account, you agree to our{' '}
-            <Link href="/terms" className="underline hover:text-gray-500">Terms of Service</Link>
+            <a href="https://docs.google.com/document/d/1neCA3dnCUDCscCMJ7FOeJThW5L-oCDdZAFVM17vyZco/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Terms of Service</a>
             {' '}and{' '}
-            <Link href="/privacy" className="underline hover:text-gray-500">Privacy Policy</Link>.
+            <a href="https://docs.google.com/document/d/1TI3ok_oArJ8p3EgDqyH_NehVEwMrydn6HPZvAiCaxEM/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Privacy Policy</a>.
           </p>
         </div>
       </div>
