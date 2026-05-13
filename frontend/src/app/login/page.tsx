@@ -108,9 +108,9 @@ export default function LoginPage() {
           </p>
           <p className="mt-3 sm:mt-4 text-center text-[11px] text-gray-400 max-w-xs mx-auto">
             By signing in, you agree to our{' '}
-            <a href="https://docs.google.com/document/d/1neCA3dnCUDCscCMJ7FOeJThW5L-oCDdZAFVM17vyZco/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Terms of Service</a>
+            <Link href="/terms" className="underline hover:text-gray-500">Terms of Service</Link>
             {' '}and{' '}
-            <a href="https://docs.google.com/document/d/1TI3ok_oArJ8p3EgDqyH_NehVEwMrydn6HPZvAiCaxEM/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Privacy Policy</a>.
+            <Link href="/privacy" className="underline hover:text-gray-500">Privacy Policy</Link>.
           </p>
         </div>
       </div>
