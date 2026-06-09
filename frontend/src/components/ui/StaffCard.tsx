@@ -1,74 +1,58 @@
 import React from 'react';
 import Image from 'next/image';
 import { User } from '@/lib/api';
-import { Card } from './Card';
 
 interface StaffCardProps {
-    staff: User;
-    onClick?: () => void;
+  staff: User & {
+    title?: string;
+    stats?: { completed?: number; open?: number; pending?: number };
+  };
+  onClick?: () => void;
 }
 
 export function StaffCard({ staff, onClick }: StaffCardProps) {
-    const { name, title, stats, profilePicture, isActive, isOnline } = staff;
+  const { name, title, stats, profilePicture, isOnline, role } = staff;
 
-    return (
-        <Card
-            onClick={onClick}
-            className="p-6 transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-pointer bg-white border-gray-100 group relative overflow-hidden"
-        >
-            {/* Active/Online Indicator */}
-            <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
-                <span className="text-[10px] font-medium text-gray-400">
-                    {isOnline ? 'Online' : 'Offline'}
-                </span>
-            </div>
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left rounded-xl bg-white ring-1 ring-inset ring-black/[0.04] p-4 hover:bg-gray-50/80 transition-colors"
+    >
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center flex-shrink-0">
+          {profilePicture ? (
+            <Image src={profilePicture} alt={name} width={44} height={44} className="object-cover" />
+          ) : (
+            <span className="text-sm font-semibold text-gray-600">{name.charAt(0).toUpperCase()}</span>
+          )}
+        </div>
 
-            <div className="flex flex-col items-center text-center">
-                {/* Avatar */}
-                <div className="relative mb-4">
-                    <div className="w-20 h-20 rounded-full bg-gray-50 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
-                        {profilePicture ? (
-                            <Image
-                                src={profilePicture}
-                                alt={name}
-                                width={80}
-                                height={80}
-                                className="object-cover"
-                            />
-                        ) : (
-                            <span className="text-2xl font-bold text-gray-300">
-                                {name.charAt(0).toUpperCase()}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Info */}
-                <div className="mb-6">
-                    <h3 className="font-bold text-gray-900 group-hover:text-orange-500 transition-colors">
-                        {name}
-                    </h3>
-                    <p className="text-xs text-gray-500 font-medium">{title || 'UI/UX Designer'}</p>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-gray-50">
-                    <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold text-gray-900">
-                            {staff.ratingCount > 0 
-                                ? (staff.ratingTotal / staff.ratingCount).toFixed(1) 
-                                : '0.0'}
-                            <span className="text-sm text-yellow-400 ml-1">★</span>
-                        </span>
-                        <span className="text-[10px] font-medium text-gray-400 leading-tight">Avg Rating ({staff.ratingCount})</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold text-gray-900">{stats?.completed ?? 0}</span>
-                        <span className="text-[10px] font-medium text-gray-400 leading-tight">Completed</span>
-                    </div>
-                </div>
-            </div>
-        </Card>
-    );
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-gray-900 truncate">{name}</h3>
+            <span
+              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`}
+            />
+          </div>
+          <p className="text-xs text-gray-500 truncate mt-0.5">{title || staff.email}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span
+              className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                role === 'ADMIN' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              {role}
+            </span>
+            {(stats?.open ?? 0) > 0 && (
+              <span className="text-[10px] text-emerald-600 font-medium">{stats?.open} open</span>
+            )}
+            {(stats?.completed ?? 0) > 0 && (
+              <span className="text-[10px] text-gray-400">{stats?.completed} closed</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </button>
+  );
 }

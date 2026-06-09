@@ -75,6 +75,7 @@ export class AuthService {
           user.id,
           user.orgId,
           user.role,
+          user.email,
         );
 
         const plan =
@@ -171,7 +172,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const accessToken = await this.signToken(user.id, user.orgId, user.role);
+    const accessToken = await this.signToken(user.id, user.orgId, user.role, user.email);
 
     const plan =
       user.org?.subscriptionPlan ?? SubscriptionPlan.STARTER;
@@ -403,6 +404,7 @@ export class AuthService {
       finalUser!.id,
       finalUser!.orgId,
       finalUser!.role,
+      finalUser!.email,
     );
 
     const plan =
@@ -535,11 +537,13 @@ export class AuthService {
     userId: string,
     orgId: string,
     role: UserRole,
+    email?: string,
   ): Promise<string> {
     const payload: JwtPayload = {
       userId,
       orgId,
       role: role as unknown as Role,
+      email,
     };
 
     return this.jwtService.signAsync(payload);

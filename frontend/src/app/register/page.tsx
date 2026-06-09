@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,7 @@ import { countries } from '@/lib/countries';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register } = useAuth();
   const [formData, setFormData] = useState({
     organizationName: '',
@@ -22,6 +23,13 @@ export default function RegisterPage() {
     phone: '',
     address: '',
   });
+
+  useEffect(() => {
+    const emailFromUrl = searchParams.get('email');
+    if (emailFromUrl) {
+      setFormData((prev) => ({ ...prev, email: emailFromUrl }));
+    }
+  }, [searchParams]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const API_BASE_URL =

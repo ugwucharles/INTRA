@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -16,7 +16,7 @@ interface NavItem {
 const mainNavigation: NavItem[] = [
   {
     name: 'Conversations',
-    href: '/dashboard',
+    href: '/dashboard/conversations',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -88,10 +88,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
-  const navItems = useMemo(() => {
-    if (user?.plan?.analytics) return mainNavigation;
-    return mainNavigation.filter((item) => item.name !== 'Analytics');
-  }, [user?.plan?.analytics]);
+  const navItems = mainNavigation;
+  const analyticsLocked = user?.plan != null && !user.plan.analytics;
   const handleNavIconClick = (e: React.MouseEvent) => {
     if (!sidebarCollapsed) return;
     e.preventDefault();
@@ -99,8 +97,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   };
 
   const isActiveRoute = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard';
+    if (href === '/dashboard/conversations') {
+      return pathname === '/dashboard' || pathname.startsWith('/dashboard/conversations');
     }
     return pathname.startsWith(href);
   };
@@ -115,13 +113,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className={`h-16 border-b border-gray-100 flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
-          <Link href="/dashboard" className="flex items-center">
+          <Link href="/dashboard/conversations" className="flex items-center">
             <Image
               src="/intra.logo.1.png"
               alt="Logo"
-              width={140}
-              height={40}
-              className={sidebarCollapsed ? 'h-6 w-6 object-contain' : 'h-8 w-auto'}
+              width={70}
+              height={20}
+              className={sidebarCollapsed ? 'h-3 w-3 object-contain' : 'h-4 w-auto'}
             />
           </Link>
           {!sidebarCollapsed && (
@@ -163,6 +161,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     </span>
                     {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
+                  {!sidebarCollapsed && item.name === 'Analytics' && analyticsLocked && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-500 rounded-full">
+                      Pro
+                    </span>
+                  )}
                   {!sidebarCollapsed && item.badge && (
                     <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
                       {item.badge}

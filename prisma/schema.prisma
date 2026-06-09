@@ -273,6 +273,7 @@ model SavedReply {
 }
 
 enum UserRole {
+  SUPER_ADMIN
   ADMIN
   AGENT
 }

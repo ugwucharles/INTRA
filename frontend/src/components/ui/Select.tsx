@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Dropdown, DropdownOption } from './Dropdown';
 
 interface SelectProps {
@@ -29,12 +29,12 @@ export function Select({
     label: opt.label,
   }));
 
-  const selected = options.find((o) => o.value === value);
-
   return (
     <div className={className}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+        <label className="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+          {label}
+        </label>
       )}
       <Dropdown
         options={dropdownOptions}

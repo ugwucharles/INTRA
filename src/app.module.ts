@@ -18,6 +18,7 @@ import { SavedRepliesModule } from './saved-replies/saved-replies.module';
 import { EmailModule } from './email/email.module';
 import { SocketModule } from './socket/socket.module';
 import { SocialAccountsModule } from './social-accounts/social-accounts.module';
+import { AdminModule } from './admin/admin.module';
 import { TenantContextInterceptor } from './tenancy/tenant-context.interceptor';
 
 @Module({
@@ -38,6 +39,7 @@ import { TenantContextInterceptor } from './tenancy/tenant-context.interceptor';
     EmailModule,
     SocketModule,
     SocialAccountsModule,
+    AdminModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

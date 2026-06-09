@@ -57,41 +57,59 @@ export class ConversationsService {
     return conversation;
   }
 
+  private async listConversationsEnriched(where: { orgId: string } & Record<string, unknown>) {
+    const rows = await this.prisma.conversation.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        customer: true,
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            content: true,
+            senderType: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return rows.map(({ messages, ...conversation }) => ({
+      ...conversation,
+      lastMessage: messages[0] ?? null,
+    }));
+  }
+
   async listConversations(currentUser: JwtPayload) {
     if (currentUser.role === 'ADMIN') {
-      // Admin sees all org conversations
-      return this.prisma.conversation.findMany({
-        where: { orgId: currentUser.orgId },
-        orderBy: { updatedAt: 'desc' },
-      });
+      return this.listConversationsEnriched({ orgId: currentUser.orgId });
     }
 
     // AGENT sees assigned conversations, plus any conversations they've previously participated in
     // (sent a staff message or added an internal note). Participation gives read-only access;
     // message sending is enforced separately in MessagesService.
-    return this.prisma.conversation.findMany({
-      where: {
-        orgId: currentUser.orgId,
-        OR: [
-          { assignedTo: currentUser.userId },
-          {
-            messages: {
-              some: {
-                senderType: 'STAFF',
-                senderId: currentUser.userId,
-              },
+    return this.listConversationsEnriched({
+      orgId: currentUser.orgId,
+      OR: [
+        { assignedTo: currentUser.userId },
+        {
+          messages: {
+            some: {
+              senderType: 'STAFF',
+              senderId: currentUser.userId,
             },
           },
-          {
-            notes: {
-              some: {
-                authorId: currentUser.userId,
-              },
+        },
+        {
+          notes: {
+            some: {
+              authorId: currentUser.userId,
             },
           },
-        ],
-      },
-      orderBy: { updatedAt: 'desc' },
+        },
+      ],
     });
   }
 

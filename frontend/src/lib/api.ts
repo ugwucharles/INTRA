@@ -105,6 +105,7 @@ export interface Conversation {
   customer?: Customer;
   assignee?: User;
   messages?: Message[];
+  lastMessage?: Pick<Message, 'id' | 'content' | 'senderType' | 'createdAt'> | null;
 }
 
 export interface Department {
@@ -513,6 +514,14 @@ export const api = {
       }),
     delete: (id: string) =>
       request<{ success: boolean }>(`/saved-replies/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+  admin: {
+    listOrganizations: () =>
+      request<any[]>('/admin/organizations'),
+    deleteOrganization: (id: string) =>
+      request<{ success: boolean }>(`/admin/organizations/${id}`, {
         method: 'DELETE',
       }),
   },

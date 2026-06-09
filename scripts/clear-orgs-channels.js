@@ -1,7 +1,6 @@
 require('dotenv/config');
 
 const { PrismaClient } = require('@prisma/client');
-const { PrismaPg } = require('@prisma/adapter-pg');
 
 const REQUIRED_CONFIRMATION = 'DELETE_ALL_ORGS_AND_CHANNELS';
 const cliConfirmArg = process.argv.find((arg) => arg.startsWith('--confirm='));
@@ -24,10 +23,11 @@ if (confirmationValue !== REQUIRED_CONFIRMATION) {
   process.exit(1);
 }
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
+/** Deletes all tenant rows; keeps tables, enums, migrations (no DROP). */
 const deleteSteps = [
+  { name: 'AuthCode (Google OAuth pending)', run: (tx) => tx.authCode.deleteMany() },
   { name: 'ConversationTag', run: (tx) => tx.conversationTag.deleteMany() },
   { name: 'CustomerTag', run: (tx) => tx.customerTag.deleteMany() },
   { name: 'ConversationNote', run: (tx) => tx.conversationNote.deleteMany() },
@@ -55,6 +55,7 @@ async function getSnapshot() {
     customers,
     conversations,
     messages,
+    authCodes,
   ] = await Promise.all([
     prisma.organization.count(),
     prisma.socialAccount.count(),
@@ -63,6 +64,7 @@ async function getSnapshot() {
     prisma.customer.count(),
     prisma.conversation.count(),
     prisma.message.count(),
+    prisma.authCode.count(),
   ]);
 
   return {
@@ -73,6 +75,7 @@ async function getSnapshot() {
     customers,
     conversations,
     messages,
+    authCodes,
   };
 }
 
@@ -80,8 +83,17 @@ async function main() {
   const before = await getSnapshot();
   console.log('Current data snapshot:', before);
 
-  if (before.organizations === 0 && before.socialAccounts === 0) {
-    console.log('No organizations/channels found. Nothing to delete.');
+  const nothingTenant =
+    before.organizations === 0 &&
+    before.socialAccounts === 0 &&
+    before.users === 0 &&
+    before.customers === 0 &&
+    before.conversations === 0 &&
+    before.messages === 0 &&
+    before.authCodes === 0;
+
+  if (nothingTenant) {
+    console.log('No tenant data found. Nothing to delete.');
     return;
   }
 

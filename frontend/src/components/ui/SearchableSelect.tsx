@@ -90,7 +90,7 @@ export function SearchableSelect({
   };
 
   return (
-    <div className={`w-full ${className}`} ref={containerRef}>
+    <div className={`relative w-full ${className}`} ref={containerRef}>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2 ios-appear">{label}</label>
       )}
@@ -98,26 +98,28 @@ export function SearchableSelect({
         type="button"
         disabled={disabled}
         onClick={handleToggle}
+        aria-expanded={open}
         className={`
-          relative w-full flex items-center justify-between
-          rounded-2xl border px-4 py-3.5 text-sm text-left
-          bg-white/95 backdrop-blur-xl shadow-sm
-          transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-          ${open
-            ? 'border-orange-500/50 ring-2 ring-orange-500/20 shadow-lg shadow-orange-500/10 scale-[1.01]'
-            : 'border-gray-200/80 hover:border-gray-300 hover:shadow-md active:scale-[0.99]'
+          relative w-full flex items-center justify-between gap-2
+          h-9 px-3 rounded-xl border text-[13px] text-left
+          bg-white transition-all duration-150
+          ${disabled ? 'cursor-not-allowed opacity-50 border-gray-200 text-gray-400' : 'cursor-pointer'}
+          ${
+            open
+              ? 'border-gray-300 ring-2 ring-gray-900/[0.06] shadow-sm'
+              : 'border-gray-200/80 shadow-sm hover:border-gray-300 hover:bg-gray-50/50'
           }
         `}
       >
-        <span className={`transition-colors duration-200 ${selected ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
+        <span className={`truncate ${selected ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
           {selected ? selected.label : placeholder}
         </span>
         <svg
-          className={`w-4 h-4 text-gray-400 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? 'rotate-180 text-orange-500' : ''}`}
+          className={`w-4 h-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -126,38 +128,27 @@ export function SearchableSelect({
         <div
           ref={dropdownRef}
           className={`
-            mt-2 w-full rounded-2xl border border-gray-200/50
-            bg-white/98 backdrop-blur-2xl shadow-2xl shadow-black/10
-            max-h-72 overflow-hidden z-50 relative
-            transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-            ${isAnimating
-              ? 'opacity-0 scale-95 translate-y-[-8px]'
-              : 'opacity-100 scale-100 translate-y-0'
-            }
+            absolute z-50 mt-1.5 w-full rounded-xl border border-gray-100
+            bg-white shadow-[0_4px_24px_rgba(0,0,0,0.08)]
+            max-h-72 overflow-hidden
+            transition-all duration-150
+            ${isAnimating ? 'opacity-0 -translate-y-1' : 'opacity-100 translate-y-0'}
           `}
-          style={{
-            animation: 'ios-dropdown-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
         >
-          <div className="p-3 border-b border-gray-100/80">
+          <div className="p-2 border-b border-gray-50">
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search..."
-              className="
-                w-full px-3 py-2 text-sm rounded-xl border border-gray-200/80
-                bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-orange-500/30
-                focus:border-orange-500/50 transition-all duration-200
-                placeholder:text-gray-400
-              "
+              className="w-full px-3 py-2 text-[13px] rounded-lg border border-gray-200 bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-gray-900/[0.06] focus:border-gray-300 focus:bg-white placeholder:text-gray-400 transition-colors"
             />
           </div>
-          <div className="max-h-60 overflow-y-auto py-1.5 custom-scrollbar">
+          <div className="max-h-52 overflow-y-auto py-1">
             {filtered.length === 0 && (
-              <div className="px-4 py-3 text-sm text-gray-400 text-center">No results found</div>
+              <div className="px-3 py-3 text-[13px] text-gray-400 text-center">No results found</div>
             )}
-            {filtered.map((option, index) => {
+            {filtered.map((option) => {
               const isSelected = option.value === value;
               return (
                 <button
@@ -165,21 +156,23 @@ export function SearchableSelect({
                   type="button"
                   onClick={() => handleSelect(option.value)}
                   className={`
-                    w-full flex flex-col items-start px-4 py-2.5 text-left
-                    transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]
-                    hover:bg-orange-50/50 active:bg-orange-100/50 active:scale-[0.98]
-                    ${isSelected ? 'bg-orange-50/80 border-l-2 border-orange-500' : ''}
+                    w-full flex items-center justify-between gap-3 px-3 py-2 text-left
+                    transition-colors duration-100
+                    ${isSelected ? 'bg-gray-50' : 'hover:bg-gray-50'}
                   `}
-                  style={{
-                    animationDelay: `${index * 20}ms`,
-                    animation: 'ios-fade-in 0.2s ease-out both',
-                  }}
                 >
-                  <span className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-900'}`}>
-                    {option.label}
-                  </span>
-                  {option.description && (
-                    <span className="text-xs text-gray-500 mt-0.5">{option.description}</span>
+                  <div className="min-w-0">
+                    <span className={`block text-[13px] truncate ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-700'}`}>
+                      {option.label}
+                    </span>
+                    {option.description && (
+                      <span className="block text-[11px] text-gray-400 truncate mt-0.5">{option.description}</span>
+                    )}
+                  </div>
+                  {isSelected && (
+                    <svg className="w-4 h-4 flex-shrink-0 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
                   )}
                 </button>
               );

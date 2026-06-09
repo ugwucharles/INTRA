@@ -76,15 +76,15 @@ export default function RoutingRulesPage() {
   return (
     <>
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 ios-appear">
+        <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
           {error}
         </div>
       )}
 
-      <Card className="p-6 ios-appear">
+      <div className="rounded-xl bg-white ring-1 ring-inset ring-black/[0.04] p-5 sm:p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Routing behavior</h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <h2 className="text-base font-semibold text-gray-900">Routing behavior</h2>
+          <p className="mt-1 text-sm text-gray-500">
             Control how new conversations are routed and which questions are asked upfront.
           </p>
         </div>
@@ -234,7 +234,7 @@ export default function RoutingRulesPage() {
             </Button>
           </div>
         </form>
-      </Card>
+      </div>
     </>
   );
 }

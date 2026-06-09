@@ -348,6 +348,16 @@ export class MetaService {
         return { name: null, avatarUrl: null };
       }
 
+      // Meta returns {} (200) when the Page token cannot read profile fields yet.
+      // For business apps, enable "Business Asset User Profile Access" (App Review)
+      // and Page → Settings → Advanced Messaging → "Info About People" field requests.
+      if (typeof data === 'object' && !data.name && !data.profile_pic && !data.error) {
+        this.logger.warn(
+          `Messenger User Profile API returned no fields for psid ${psid} (empty object). ` +
+            `Ensure Business Asset User Profile Access is approved and Page Advanced Messaging profile fields are enabled.`,
+        );
+      }
+
       let name = typeof data.name === 'string' ? data.name.trim() : null;
       const avatarUrl = typeof data.profile_pic === 'string' ? data.profile_pic : null;
 
@@ -910,12 +920,14 @@ export class MetaService {
           isSaved: false,
         },
       });
-    } else if (displayName) {
+    } else if (profile.name || profile.avatarUrl) {
+      // Only overwrite fields we actually received (Graph often returns {} until
+      // Business Asset User Profile Access + opt-in are satisfied).
       await this.prisma.customer.updateMany({
         where: { id: customer.id, orgId },
         data: {
-          name: displayName,
-          avatarUrl: profile.avatarUrl,
+          ...(profile.name ? { name: profile.name } : {}),
+          ...(profile.avatarUrl ? { avatarUrl: profile.avatarUrl } : {}),
         },
       });
     }
