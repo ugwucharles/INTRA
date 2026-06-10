@@ -13,10 +13,10 @@ export default function ConversationsLayout({ children }: { children: React.Reac
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="h-full flex overflow-hidden bg-white">
+        <div className="h-full flex overflow-hidden bg-transparent">
           {/* Inbox list — full width on mobile when no thread selected */}
           <aside
-            className={`flex-shrink-0 flex flex-col border-r border-gray-100 bg-white w-full lg:w-[340px] xl:w-[380px] ${
+            className={`flex-shrink-0 flex flex-col border-r border-indigo-200/70 bg-white/80 backdrop-blur-md w-full lg:w-[340px] xl:w-[380px] ${
               hasActiveConversation ? 'hidden lg:flex' : 'flex'
             }`}
           >
@@ -27,7 +27,7 @@ export default function ConversationsLayout({ children }: { children: React.Reac
           <main
             className={`flex-1 flex flex-col min-w-0 min-h-0 ${
               hasActiveConversation ? 'flex' : 'hidden lg:flex'
-            }`}
+            } bg-white/55`}
           >
             {children}
           </main>

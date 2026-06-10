@@ -19,6 +19,7 @@ import { EmailModule } from './email/email.module';
 import { SocketModule } from './socket/socket.module';
 import { SocialAccountsModule } from './social-accounts/social-accounts.module';
 import { AdminModule } from './admin/admin.module';
+import { BillingModule } from './billing/billing.module';
 import { TenantContextInterceptor } from './tenancy/tenant-context.interceptor';
 
 @Module({
@@ -40,6 +41,7 @@ import { TenantContextInterceptor } from './tenancy/tenant-context.interceptor';
     SocketModule,
     SocialAccountsModule,
     AdminModule,
+    BillingModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

@@ -6,6 +6,7 @@ import * as bodyParser from 'body-parser';
 import helmet from 'helmet';
 import session from 'express-session';
 import passport from 'passport';
+import * as Sentry from '@sentry/node';
 
 function validateEnv() {
   const required = [
@@ -16,21 +17,54 @@ function validateEnv() {
     'META_PAGE_ACCESS_TOKEN',
   ];
 
+  const optional = [
+    'SENTRY_DSN',
+    'REDIS_URL',
+    'SUPER_ADMIN_EMAIL',
+  ];
+
   const missing = required.filter((key) => {
     if (key === 'META_APP_SECRET') {
       return !process.env.META_APP_SECRET && !process.env.INSTAGRAM_APP_SECRET;
     }
     return !process.env[key];
   });
+
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}`,
+    );
+  }
+
+  // Warn about optional but recommended variables
+  const missingOptional = optional.filter((key) => !process.env[key]);
+  if (missingOptional.length > 0) {
+    console.warn(
+      `⚠️  Optional environment variables not set (recommended for production): ${missingOptional.join(', ')}`,
     );
   }
 }
 
 async function bootstrap() {
   validateEnv();
+
+  // Initialize Sentry for error tracking
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV || 'development',
+      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+      beforeSend(event) {
+        // Filter out sensitive data
+        if (event.request) {
+          delete event.request.cookies;
+          delete event.request.headers;
+        }
+        return event;
+      },
+    });
+  }
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Google OAuth (Passport) needs a session to store state between /auth/google and the callback.
@@ -79,6 +113,17 @@ async function bootstrap() {
     }),
   );
   app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
+  // ── HTTPS enforcement in production
+  if (process.env.NODE_ENV === 'production') {
+    app.use((req: any, res: any, next: any) => {
+      if (req.header('x-forwarded-proto') !== 'https') {
+        res.redirect(`https://${req.header('host')}${req.url}`);
+      } else {
+        next();
+      }
+    });
+  }
 
   // ── CORS — production domains + typical local dev (override with ALLOWED_ORIGINS)
   const defaultOrigins =

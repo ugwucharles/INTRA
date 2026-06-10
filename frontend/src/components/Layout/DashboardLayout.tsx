@@ -104,15 +104,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="font-sans flex h-screen bg-[#F5F5F5]">
+    <div className="font-sans flex h-screen intra-dashboard-shell">
       {/* Sidebar */}
       <aside
-        className={`h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-200 ${
+        className={`h-full intra-dashboard-surface flex flex-col transition-all duration-200 ${
           sidebarCollapsed ? 'w-20' : 'w-60'
         }`}
       >
         {/* Logo */}
-        <div className={`h-16 border-b border-gray-100 flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
+        <div className={`h-16 border-b border-indigo-200/70 flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
           <Link href="/dashboard/conversations" className="flex items-center">
             <Image
               src="/intra.logo.1.png"
@@ -127,7 +127,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               type="button"
               aria-label="Collapse sidebar"
               onClick={() => setSidebarCollapsed(true)}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:bg-gray-100"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-500 hover:bg-indigo-50"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -148,26 +148,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   onClick={handleNavIconClick}
                   className={`
                     flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-lg text-sm font-medium
-                    transition-colors duration-150
+                    transition-all duration-200
                     ${isActive
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-400/50'
+                      : 'text-slate-600 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-cyan-100 hover:text-slate-900 hover:shadow-md'
                     }
                   `}
                 >
                   <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
-                    <span className={isActive ? 'text-gray-900' : 'text-gray-400'}>
+                    <span className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'}>
                       {item.icon}
                     </span>
                     {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
                   {!sidebarCollapsed && item.name === 'Analytics' && analyticsLocked && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-500 rounded-full">
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-indigo-400 to-cyan-400 text-white rounded-full shadow-md">
                       Pro
                     </span>
                   )}
                   {!sidebarCollapsed && item.badge && (
-                    <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                    <span className="px-2 py-0.5 text-xs font-medium bg-white/90 text-slate-700 rounded-full shadow-sm">
                       {item.badge}
                     </span>
                   )}
@@ -178,7 +178,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom Navigation */}
-        <div className="px-3 py-4 border-t border-gray-100">
+        <div className="px-3 py-4 border-t border-indigo-200/70">
           <div className="space-y-1">
             {bottomNavigation.map((item) => {
               const isActive = isActiveRoute(item.href);
@@ -189,21 +189,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   onClick={handleNavIconClick}
                   className={`
                     flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-lg text-sm font-medium
-                    transition-colors duration-150
+                    transition-all duration-200
                     ${isActive
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-400/50'
+                      : 'text-slate-600 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-cyan-100 hover:text-slate-900 hover:shadow-md'
                     }
                   `}
                 >
                   <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
-                    <span className={isActive ? 'text-gray-900' : 'text-gray-400'}>
+                    <span className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'}>
                       {item.icon}
                     </span>
                     {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
                   {!sidebarCollapsed && item.badge && (
-                    <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                    <span className="px-2 py-0.5 text-xs font-medium bg-white/90 text-slate-700 rounded-full shadow-sm">
                       {item.badge}
                     </span>
                   )}
@@ -216,7 +216,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 logout();
                 window.location.href = '/login';
               }}
-              className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors duration-150`}
+              className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50/80 transition-colors duration-150`}
             >
               <span className="text-red-500">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,19 +229,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* User Profile */}
-        <div className="px-3 py-4 border-t border-gray-100">
+        <div className="px-3 py-4 border-t border-indigo-200/70">
           <div className={`flex items-center px-2 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-cyan-50 flex items-center justify-center overflow-hidden border border-white shadow-sm">
               {user?.profilePicture ? (
                 <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
               ) : null}
               <div className={`flex items-center justify-center w-full h-full ${user?.profilePicture ? 'hidden' : ''}`}>
                 {user?.name ? (
-                  <span className="text-sm font-semibold text-gray-700">
+                  <span className="text-sm font-semibold text-slate-700">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 ) : (
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 )}
@@ -249,10 +249,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate">
+                <p className="text-sm font-bold text-slate-900 truncate">
                   {user?.name || 'User'}
                 </p>
-                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-tight truncate">
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight truncate">
                   {(user?.orgName && user.orgName.trim() !== '') ? user.orgName : 'No Organization'}
                 </p>
               </div>
@@ -262,7 +262,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-hidden flex flex-col">
+      <main className="flex-1 overflow-hidden flex flex-col bg-transparent">
         {children}
       </main>
     </div>

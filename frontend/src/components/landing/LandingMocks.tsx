@@ -3,9 +3,9 @@ import React from 'react';
 /** Saved replies — a feature INTRA actually has */
 export function SavedRepliesMock() {
   return (
-    <div className="relative mx-auto max-w-[640px]">
+    <div className="landing-hover-lift relative mx-auto max-w-[640px]">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#ffe8d6] via-transparent to-transparent rounded-[40px] blur-2xl scale-110 opacity-80" />
-      <div className="rounded-2xl border border-neutral-200/80 bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] overflow-hidden">
+      <div className="kinso-ambient-shimmer overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] ring-1 ring-amber-100/60">
         <div className="flex items-center gap-2 border-b border-neutral-100 px-4 py-3">
           <div className="w-8 h-8 rounded-full bg-neutral-200" />
           <div>
@@ -46,9 +46,9 @@ export function SavedRepliesMock() {
 
 export function SearchMock() {
   return (
-    <div className="relative mx-auto max-w-[640px]">
+    <div className="landing-hover-lift relative mx-auto max-w-[640px]">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#d4eef5] via-transparent to-transparent rounded-[40px] blur-2xl scale-110 opacity-80" />
-      <div className="rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)]">
+      <div className="kinso-ambient-shimmer rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] ring-1 ring-sky-100/70">
         <div className="flex items-center gap-2 rounded-xl bg-neutral-100 px-4 py-3 ring-1 ring-neutral-200/60">
           <svg className="w-4 h-4 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -78,9 +78,9 @@ export function SearchMock() {
 
 export function ContextMock() {
   return (
-    <div className="relative mx-auto max-w-[640px]">
+    <div className="landing-hover-lift relative mx-auto max-w-[640px]">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#e8dff5] via-transparent to-transparent rounded-[40px] blur-2xl scale-110 opacity-70" />
-      <div className="rounded-2xl border border-neutral-200/80 bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] overflow-hidden">
+      <div className="kinso-ambient-shimmer overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] ring-1 ring-violet-100/70">
         <div className="p-4 border-b border-neutral-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-neutral-200" />
@@ -125,7 +125,7 @@ export function ContextMock() {
 
 export function RoutingMock() {
   return (
-    <div className="relative max-w-[480px] ml-auto">
+    <div className="landing-hover-lift relative max-w-[480px] ml-auto">
       <div className="space-y-3">
         {[
           { name: 'Maya Sterling', tag: 'Sales', tagColor: 'bg-emerald-100 text-emerald-800', ch: 'WhatsApp', msg: 'Interested in team pricing for 10 seats.' },
@@ -134,7 +134,7 @@ export function RoutingMock() {
         ].map((c) => (
           <div
             key={c.name}
-            className="rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm p-4 flex gap-3"
+            className="rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm p-4 flex gap-3 transition-all duration-300 hover:bg-white/[0.1] hover:-translate-y-0.5"
           >
             <div className="w-10 h-10 rounded-full bg-neutral-700 shrink-0" />
             <div className="min-w-0">
@@ -154,8 +154,8 @@ export function RoutingMock() {
 
 export function ContactProfileMock() {
   return (
-    <div className="relative max-w-[400px] ml-auto">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm p-5">
+    <div className="landing-hover-lift relative max-w-[400px] ml-auto">
+      <div className="rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.11] to-white/[0.03] backdrop-blur-sm p-5 shadow-[0_18px_46px_-26px_rgba(56,189,248,0.45)]">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-14 h-14 rounded-full bg-neutral-700" />
           <div>

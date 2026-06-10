@@ -4,37 +4,73 @@ import { SubscriptionPlan } from '@prisma/client';
 
 export type PlanCapabilities = {
   maxSeats: number | null;
+  maxConversations: number | null;
   departments: boolean;
   smartRouting: boolean;
   escalation: boolean;
   staffRating: boolean;
   analytics: boolean;
+  savedReplies: boolean;
+  tags: boolean;
+  customerNotes: boolean;
+  conversationNotes: boolean;
+  businessHours: boolean;
+  autoReplies: boolean;
+  integrations: boolean;
+  apiAccess: boolean;
 };
 
 const CAPS: Record<SubscriptionPlan, PlanCapabilities> = {
   STARTER: {
     maxSeats: 3,
+    maxConversations: 100,
     departments: false,
     smartRouting: false,
     escalation: false,
     staffRating: false,
     analytics: false,
+    savedReplies: true,
+    tags: true,
+    customerNotes: true,
+    conversationNotes: true,
+    businessHours: false,
+    autoReplies: false,
+    integrations: false,
+    apiAccess: false,
   },
   GROWTH: {
     maxSeats: 10,
+    maxConversations: 1000,
     departments: true,
     smartRouting: true,
     escalation: true,
     staffRating: true,
     analytics: false,
+    savedReplies: true,
+    tags: true,
+    customerNotes: true,
+    conversationNotes: true,
+    businessHours: true,
+    autoReplies: true,
+    integrations: true,
+    apiAccess: false,
   },
   BUSINESS: {
     maxSeats: null,
+    maxConversations: null,
     departments: true,
     smartRouting: true,
     escalation: true,
     staffRating: true,
     analytics: true,
+    savedReplies: true,
+    tags: true,
+    customerNotes: true,
+    conversationNotes: true,
+    businessHours: true,
+    autoReplies: true,
+    integrations: true,
+    apiAccess: true,
   },
 };
 
@@ -94,6 +130,64 @@ export class PlansService {
     if (!c.smartRouting) {
       throw new ForbiddenException(
         'Smart routing is not available on your plan. Upgrade to Growth or Business.',
+      );
+    }
+  }
+
+  async assertAnalyticsEnabled(orgId: string): Promise<void> {
+    const c = await this.getCapabilitiesForOrg(orgId);
+    if (!c.analytics) {
+      throw new ForbiddenException(
+        'Analytics are not available on your plan. Upgrade to Business.',
+      );
+    }
+  }
+
+  async assertBusinessHoursEnabled(orgId: string): Promise<void> {
+    const c = await this.getCapabilitiesForOrg(orgId);
+    if (!c.businessHours) {
+      throw new ForbiddenException(
+        'Business hours are not available on your plan. Upgrade to Growth or Business.',
+      );
+    }
+  }
+
+  async assertAutoRepliesEnabled(orgId: string): Promise<void> {
+    const c = await this.getCapabilitiesForOrg(orgId);
+    if (!c.autoReplies) {
+      throw new ForbiddenException(
+        'Auto replies are not available on your plan. Upgrade to Growth or Business.',
+      );
+    }
+  }
+
+  async assertIntegrationsEnabled(orgId: string): Promise<void> {
+    const c = await this.getCapabilitiesForOrg(orgId);
+    if (!c.integrations) {
+      throw new ForbiddenException(
+        'Integrations are not available on your plan. Upgrade to Growth or Business.',
+      );
+    }
+  }
+
+  async assertApiAccessEnabled(orgId: string): Promise<void> {
+    const c = await this.getCapabilitiesForOrg(orgId);
+    if (!c.apiAccess) {
+      throw new ForbiddenException(
+        'API access is not available on your plan. Upgrade to Business.',
+      );
+    }
+  }
+
+  async assertCanCreateConversation(orgId: string): Promise<void> {
+    const { maxConversations } = await this.getCapabilitiesForOrg(orgId);
+    if (maxConversations == null) return;
+    const count = await this.prisma.conversation.count({
+      where: { orgId },
+    });
+    if (count >= maxConversations) {
+      throw new ForbiddenException(
+        `Your plan allows up to ${maxConversations} conversations. Upgrade to add more.`,
       );
     }
   }
