@@ -5,15 +5,21 @@ import Stripe from 'stripe';
 
 @Injectable()
 export class BillingService {
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
 
   constructor(private readonly prisma: PrismaService) {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-      apiVersion: '2025-02-24.acacia',
-    });
+    if (process.env.STRIPE_SECRET_KEY) {
+      this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2025-02-24.acacia',
+      });
+    }
   }
 
   async createCheckoutSession(orgId: string, plan: SubscriptionPlan) {
+    if (!this.stripe) {
+      throw new Error('Stripe is not configured');
+    }
+
     const organization = await this.prisma.organization.findUnique({
       where: { id: orgId },
     });
