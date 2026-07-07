@@ -9,7 +9,7 @@ export class BillingService {
 
   constructor(private readonly prisma: PrismaService) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-02-24.acacia',
     });
   }
 
