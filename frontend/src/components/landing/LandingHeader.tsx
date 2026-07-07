@@ -30,9 +30,9 @@ export function LandingHeader() {
           ${scrolled ? 'bg-white/80 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)]' : 'bg-white/50 shadow-[0_0.6px_0.6px_-1.25px_rgba(0,0,0,0.18),0_2.3px_2.3px_-2.5px_rgba(0,0,0,0.16),0_10px_10px_-3.75px_rgba(0,0,0,0.06)]'}
         `}
       >
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3 sm:px-6 sm:py-3.5">
+        <div className="flex md:grid md:grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3 sm:px-6 sm:py-3.5">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 justify-self-start shrink-0">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
             <Image
               src="/intra-logo-new.png"
               alt="INTRA"
@@ -57,7 +57,7 @@ export function LandingHeader() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center justify-self-end gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 md:justify-self-end ml-auto">
             <button
               type="button"
               className="md:hidden p-2 -mr-1 text-neutral-600 hover:text-neutral-900"

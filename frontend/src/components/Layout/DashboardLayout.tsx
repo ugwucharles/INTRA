@@ -150,19 +150,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-lg text-sm font-medium
                     transition-all duration-200
                     ${isActive
-                      ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-400/50'
-                      : 'text-slate-600 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-cyan-100 hover:text-slate-900 hover:shadow-md'
+                      ? 'bg-neutral-950 text-white shadow-lg shadow-neutral-500/30 ring-2 ring-neutral-400/50'
+                      : 'text-slate-600 hover:bg-neutral-100 hover:text-slate-900 hover:shadow-md'
                     }
                   `}
                 >
                   <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
-                    <span className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'}>
+                    <span className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-neutral-900'}>
                       {item.icon}
                     </span>
                     {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
                   {!sidebarCollapsed && item.name === 'Analytics' && analyticsLocked && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-indigo-400 to-cyan-400 text-white rounded-full shadow-md">
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-neutral-900 text-white rounded-full shadow-md">
                       Pro
                     </span>
                   )}
@@ -191,13 +191,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-lg text-sm font-medium
                     transition-all duration-200
                     ${isActive
-                      ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-400/50'
-                      : 'text-slate-600 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-cyan-100 hover:text-slate-900 hover:shadow-md'
+                      ? 'bg-neutral-950 text-white shadow-lg shadow-neutral-500/30 ring-2 ring-neutral-400/50'
+                      : 'text-slate-600 hover:bg-neutral-100 hover:text-slate-900 hover:shadow-md'
                     }
                   `}
                 >
                   <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
-                    <span className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'}>
+                    <span className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-neutral-900'}>
                       {item.icon}
                     </span>
                     {!sidebarCollapsed && <span>{item.name}</span>}

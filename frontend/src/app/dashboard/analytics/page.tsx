@@ -24,8 +24,6 @@ function channelBarColor(source: string) {
       return 'bg-pink-500';
     case 'WHATSAPP':
       return 'bg-green-500';
-    case 'EMAIL':
-      return 'bg-gray-500';
     default:
       return 'bg-gray-400';
   }

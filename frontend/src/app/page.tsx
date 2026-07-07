@@ -16,6 +16,7 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 import { ChannelIconRow } from '@/components/landing/ChannelIcons';
 import { LandingEmailCTA } from '@/components/landing/LandingEmailCTA';
 import { Reveal } from '@/components/landing/Reveal';
+import { Inbox, Workflow, User, Users, Check, ChevronDown } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -39,7 +40,7 @@ export default function LandingPage() {
                   every conversation.
                 </h1>
                 <p className="mt-6 text-base sm:text-lg text-neutral-600 leading-relaxed">
-                  INTRA brings together WhatsApp, Messenger, Instagram, and email. Your team
+                  INTRA brings together WhatsApp, Messenger, and Instagram. Your team
                   sees full context beside every thread, routes to the right department, and
                   replies with saved responses — without switching apps.
                 </p>
@@ -59,157 +60,242 @@ export default function LandingPage() {
       </section>
 
       <main id="features">
-        <LandingFeatureSection
-          index={0}
-          label="Unified inbox"
-          title="Run WhatsApp, Messenger, Instagram, and email from one team inbox."
-          description="INTRA merges every incoming message into one operational queue with assignee, status, and channel source visible at a glance."
-          extra="No tab hopping. Sales and support teams work from the same live inbox and never lose context between channels."
-          visual={<SavedRepliesMock />}
-        />
+        {/* Features - Clean alternating layout */}
+        <section className="py-24 sm:py-32 bg-white">
+          <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
+            <Reveal className="text-center max-w-3xl mx-auto mb-20">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Features</p>
+              <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-[-0.03em] text-neutral-950">
+                Built for modern customer teams
+              </h2>
+              <p className="mt-4 text-base sm:text-lg text-neutral-600 leading-relaxed">
+                Everything you need to manage conversations across WhatsApp, Messenger, and Instagram in one place.
+              </p>
+            </Reveal>
 
-        <LandingFeatureSection
-          index={1}
-          label="Automation & routing"
-          title="Automatically route each conversation to the right department."
-          description="Use rules for channel, intent, tags, and workload to send chats directly to Sales, Support, or Billing in seconds."
-          extra="INTRA can trigger instant auto-replies, then assign ownership with clear SLA status so no lead or ticket sits idle."
-          visual={<SearchMock />}
-        />
+            {/* Feature 1 */}
+            <Reveal delay={100}>
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-6">
+                    <Inbox className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-semibold text-neutral-950 mb-4">
+                    Unified inbox
+                  </h3>
+                  <p className="text-neutral-600 leading-relaxed mb-6">
+                    All your customer conversations in one place. WhatsApp, Messenger, and Instagram messages flow into a single queue with assignee, status, and channel source visible at a glance.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-blue-600" />
+                      <span>All channels in one view</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-blue-600" />
+                      <span>Team assignment and status</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-blue-600" />
+                      <span>Real-time sync across devices</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-8">
+                  <SavedRepliesMock />
+                </div>
+              </div>
+            </Reveal>
 
-        <LandingFeatureSection
-          index={2}
-          label="Customer intelligence"
-          title="Give every teammate the same customer memory before they reply."
-          description="Each thread includes profile tags, private notes, past conversation history, and cross-channel activity in one view."
-          extra="You respond with full context every time, even when a different teammate handled the last interaction."
-          visual={<ContextMock />}
-        />
+            {/* Feature 2 */}
+            <Reveal delay={150}>
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
+                <div className="order-2 lg:order-1">
+                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-8">
+                    <RoutingMock />
+                  </div>
+                </div>
+                <div className="order-1 lg:order-2">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mb-6">
+                    <Workflow className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-semibold text-neutral-950 mb-4">
+                    Smart routing
+                  </h3>
+                  <p className="text-neutral-600 leading-relaxed mb-6">
+                    Automatically route conversations to the right team. Set up rules based on channel, intent, tags, and workload to ensure every message reaches the right person instantly.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-emerald-600" />
+                      <span>Rule-based automation</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-emerald-600" />
+                      <span>Department assignment</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-emerald-600" />
+                      <span>Auto-replies and triggers</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Feature 3 */}
+            <Reveal delay={200}>
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-24">
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-6">
+                    <User className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-semibold text-neutral-950 mb-4">
+                    Customer context
+                  </h3>
+                  <p className="text-neutral-600 leading-relaxed mb-6">
+                    Never lose track of customer history. Profile tags, private notes, past conversations, and cross-channel activity stay attached to every contact.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-amber-600" />
+                      <span>Complete conversation history</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-amber-600" />
+                      <span>Tags and custom fields</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-amber-600" />
+                      <span>Private team notes</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-8">
+                  <ContextMock />
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Feature 4 */}
+            <Reveal delay={250}>
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <div className="order-2 lg:order-1">
+                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-8">
+                    <ContactProfileMock />
+                  </div>
+                </div>
+                <div className="order-1 lg:order-2">
+                  <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center mb-6">
+                    <Users className="w-6 h-6 text-neutral-900" />
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-semibold text-neutral-950 mb-4">
+                    Team collaboration
+                  </h3>
+                  <p className="text-neutral-600 leading-relaxed mb-6">
+                    Work together seamlessly. Assign conversations, add internal notes, and hand off between team members without losing context.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-neutral-900" />
+                      <span>Conversation assignment</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-neutral-900" />
+                      <span>Internal mentions and notes</span>
+                    </li>
+                    <li className="flex items-center gap-3 text-neutral-600">
+                      <Check className="w-5 h-5 text-neutral-900" />
+                      <span>Role-based access</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
       </main>
 
-      {/* Dark transition — Kinso quote block */}
-      <section className="kinso-dark-grid kinso-dark-aurora py-20 sm:py-28">
-        <Reveal className="mx-auto max-w-[900px] px-5 sm:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-[2.5rem] font-semibold leading-snug tracking-[-0.02em] text-white">
-            INTRA is your conversation operations layer — from first lead to support follow-up,
-            everything happens in one coordinated workspace.
-          </h2>
-          <p className="mt-6 text-base sm:text-lg text-neutral-400 leading-relaxed max-w-[720px] mx-auto">
-            Every message lands in a single queue with assignment, priority, and history built
-            in, so teams close faster without sacrificing response quality.
-          </p>
-        </Reveal>
-      </section>
 
-      {/* Dark feature — department routing (real INTRA feature) */}
-      <section className="kinso-dark-grid kinso-dark-aurora py-16 sm:py-24 border-t border-white/5">
-        <div className="mx-auto max-w-[1200px] px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-2xl sm:text-[2.25rem] font-semibold leading-tight tracking-[-0.02em] text-white">
-              Route and prioritize conversations with{' '}
-              <span className="bg-gradient-to-r from-emerald-300 to-cyan-300 bg-clip-text text-transparent">zero manual triage.</span>
+      {/* Pricing */}
+      <section id="pricing" className="py-20 sm:py-32 bg-neutral-50">
+        <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
+          <Reveal className="text-center max-w-2xl mx-auto">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Pricing</p>
+            <h2 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-neutral-950">
+              Simple, transparent pricing
             </h2>
-            <p className="mt-5 text-neutral-400 leading-relaxed">
-              Departments, assignment rules, and automation keep every thread moving to the
-              teammate who should own it next, with open, pending, and resolved states tracked
-              live.
+            <p className="mt-4 text-base text-neutral-600 leading-relaxed">
+              Start free, scale as you grow. No hidden fees, no surprises.
             </p>
-          </div>
-          <RoutingMock />
-        </div>
-      </section>
+          </Reveal>
 
-      {/* Dark feature — contact profiles */}
-      <section className="kinso-dark-grid kinso-dark-aurora py-16 sm:py-24 border-t border-white/5">
-        <div className="mx-auto max-w-[1200px] px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
-          <div className="order-2 lg:order-1">
-            <ContactProfileMock />
-          </div>
-          <div className="order-1 lg:order-2">
-            <h2 className="text-2xl sm:text-[2.25rem] font-semibold leading-tight tracking-[-0.02em] text-white">
-              Remember every{' '}
-              <span className="bg-gradient-to-r from-amber-300 to-teal-300 bg-clip-text text-transparent">
-                detail
-              </span>{' '}
-              on the contact profile.
-            </h2>
-            <p className="mt-5 text-neutral-400 leading-relaxed">
-              INTRA builds a living customer record from every channel: tags, notes, team
-              handoff context, and previous replies all stay attached to the contact.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing — light */}
-      <section id="pricing" className="kinso-light-grid kinso-pricing-aurora relative py-20 sm:py-28 border-t border-neutral-100">
-        <div className="mx-auto max-w-[900px] px-5 sm:px-8 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Pricing</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-neutral-950">
-            Plans for teams that run revenue + support in one inbox
-          </h2>
-          <p className="mx-auto mt-4 max-w-[680px] text-sm leading-relaxed text-neutral-600 sm:text-base">
-            Start small, then scale into advanced routing and analytics as your conversation
-            volume grows.
-          </p>
-          <div className="mt-12 grid gap-6 sm:grid-cols-3 text-left">
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: 'Starter', price: '$49', desc: '3 seats · unified inbox + all channels' },
-              { name: 'Growth', price: '$99', desc: '10 seats · routing, automation, analytics', highlight: true },
-              { name: 'Business', price: '$199', desc: 'Unlimited seats · priority support + control' },
+              { name: 'Starter', price: '$49', period: '/month', desc: 'Perfect for small teams getting started', features: ['3 team seats', 'All channels included', 'Unified inbox', 'Basic analytics'] },
+              { name: 'Growth', price: '$99', period: '/month', desc: 'For growing teams with automation needs', features: ['10 team seats', 'Routing & automation', 'Advanced analytics', 'Priority support'], highlight: true },
+              { name: 'Business', price: '$199', period: '/month', desc: 'For organizations at scale', features: ['Unlimited team seats', 'Custom workflows', 'SLA management', 'Dedicated support'] },
             ].map((p) => (
-              <div
-                key={p.name}
-                className={`landing-hover-lift relative overflow-hidden rounded-3xl p-6 border ${
+              <Reveal key={p.name} delay={100}>
+                <div className={`relative rounded-3xl p-8 ${
                   p.highlight
-                    ? 'border-indigo-400/60 bg-gradient-to-br from-indigo-900 via-indigo-800 to-cyan-700 text-white shadow-[0_35px_80px_-34px_rgba(30,64,175,0.9)]'
-                    : 'border-white/80 bg-white/80 backdrop-blur-xl shadow-[0_25px_56px_-38px_rgba(15,23,42,0.75)]'
-                }`}
-              >
-                <div className={`pointer-events-none absolute -top-16 -right-14 h-40 w-40 rounded-full blur-3xl ${p.highlight ? 'bg-cyan-300/35' : 'bg-amber-200/40'}`} />
-                <h3 className="relative font-bold text-lg">{p.name}</h3>
-                <p className="mt-2 text-3xl font-bold tracking-tight">
-                  {p.price}
-                  <span className={`text-sm font-normal ${p.highlight ? 'text-cyan-100' : 'text-neutral-500'}`}>/mo</span>
-                </p>
-                <p className={`mt-3 text-sm ${p.highlight ? 'text-indigo-100' : 'text-neutral-600'}`}>{p.desc}</p>
-                <Link
-                  href="/register"
-                  className={`mt-6 block rounded-full py-2.5 text-center text-sm font-semibold ${
-                    p.highlight
-                      ? 'bg-white text-indigo-900 hover:bg-indigo-50'
-                      : 'bg-neutral-950 text-white hover:bg-neutral-800'
-                  }`}
-                >
-                  Get started
-                </Link>
-              </div>
+                    ? 'bg-neutral-900 text-white border-2 border-neutral-900'
+                    : 'bg-white border border-neutral-200'
+                }`}>
+                  {p.highlight && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-neutral-900 text-white text-xs font-semibold rounded-full">
+                      Most popular
+                    </div>
+                  )}
+                  <h3 className={`text-xl font-semibold ${p.highlight ? 'text-white' : 'text-neutral-950'}`}>{p.name}</h3>
+                  <p className={`mt-2 text-sm ${p.highlight ? 'text-neutral-400' : 'text-neutral-600'}`}>{p.desc}</p>
+                  <div className="mt-6">
+                    <span className={`text-4xl font-bold ${p.highlight ? 'text-white' : 'text-neutral-950'}`}>{p.price}</span>
+                    <span className={`text-sm ${p.highlight ? 'text-neutral-400' : 'text-neutral-600'}`}>{p.period}</span>
+                  </div>
+                  <ul className="mt-8 space-y-4">
+                    {p.features.map((f) => (
+                      <li key={f} className="flex items-start gap-3">
+                        <Check className={`w-5 h-5 mt-0.5 ${p.highlight ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                        <span className={`text-sm ${p.highlight ? 'text-neutral-300' : 'text-neutral-600'}`}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="/register"
+                    className={`mt-8 block w-full rounded-xl py-3 text-center text-sm font-semibold transition-colors ${
+                      p.highlight
+                        ? 'bg-white text-neutral-900 hover:bg-neutral-100'
+                        : 'bg-neutral-900 text-white hover:bg-neutral-800'
+                    }`}
+                  >
+                    Get started
+                  </Link>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ — Kinso dark accordion */}
-      <section id="faq" className="kinso-dark-grid kinso-dark-aurora py-20 sm:py-28">
-        <div className="mx-auto max-w-[720px] px-5 sm:px-8">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs font-medium text-neutral-500 px-3 py-1 rounded-full border border-white/10">
-              FAQs
-            </span>
-            <div className="flex-1 h-px bg-white/10" />
-          </div>
-          <h2 className="text-center text-2xl sm:text-3xl font-semibold text-white">
-            Frequently Asked Questions
-          </h2>
-          <p className="mt-3 text-center text-sm text-neutral-400">
-            Questions teams ask before moving all customer conversations into INTRA.
-          </p>
-          <div className="mt-10 space-y-3">
+      {/* FAQ */}
+      <section id="faq" className="py-20 sm:py-32 bg-white">
+        <div className="mx-auto max-w-[800px] px-5 sm:px-8">
+          <Reveal className="text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">FAQ</p>
+            <h2 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-neutral-950">
+              Frequently asked questions
+            </h2>
+            <p className="mt-4 text-base text-neutral-600 leading-relaxed">
+              Everything you need to know about INTRA
+            </p>
+          </Reveal>
+
+          <div className="mt-16 space-y-4">
             {[
               {
                 q: 'How is INTRA different from a normal inbox?',
-                a: 'Most inboxes only organize one channel. INTRA combines WhatsApp, Messenger, Instagram, and email with team assignment, routing rules, and shared customer context.',
+                a: 'Most inboxes only organize one channel. INTRA combines WhatsApp, Messenger, and Instagram with team assignment, routing rules, and shared customer context.',
               },
               {
                 q: 'Do customers still use their original apps?',
@@ -217,29 +303,53 @@ export default function LandingPage() {
               },
               {
                 q: 'What channels are supported?',
-                a: 'WhatsApp Business Cloud, Facebook Messenger, Instagram DMs, and email.',
+                a: 'WhatsApp Business Cloud, Facebook Messenger, and Instagram DMs.',
               },
               {
                 q: 'Is my data secure?',
                 a: 'Data is scoped per organization with role-based access. Channel tokens are never shared across tenants.',
               },
-            ].map((item) => (
-              <details
-                key={item.q}
-                className="group landing-hover-lift rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 open:bg-white/[0.08]"
-              >
-                <summary className="cursor-pointer list-none text-[15px] font-medium text-white [&::-webkit-details-marker]:hidden">
-                  <span className="flex items-center justify-between gap-4">
-                    {item.q}
-                    <span className="text-neutral-500 text-xl leading-none group-open:rotate-45 transition-transform">+</span>
-                  </span>
-                </summary>
-                <p className="mt-3 pt-3 border-t border-white/10 text-sm text-neutral-400 leading-relaxed">
-                  {item.a}
-                </p>
-              </details>
+              {
+                q: 'Can I try INTRA before committing?',
+                a: 'Yes. Start with our free trial to explore all features before upgrading to a paid plan.',
+              },
+            ].map((item, index) => (
+              <Reveal key={item.q} delay={index * 50}>
+                <details className="group rounded-2xl border border-neutral-200 bg-neutral-50 px-6 py-5 open:bg-white">
+                  <summary className="cursor-pointer list-none text-base font-medium text-neutral-950 [&::-webkit-details-marker]:hidden">
+                    <span className="flex items-center justify-between gap-4">
+                      {item.q}
+                      <ChevronDown className="w-5 h-5 text-neutral-400 shrink-0 group-open:rotate-180 transition-transform" />
+                    </span>
+                  </summary>
+                  <p className="mt-4 text-sm text-neutral-600 leading-relaxed">
+                    {item.a}
+                  </p>
+                </details>
+              </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 sm:py-32 bg-neutral-900">
+        <div className="mx-auto max-w-[800px] px-5 sm:px-8 text-center">
+          <Reveal>
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-white">
+              Ready to unify your customer conversations?
+            </h2>
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
+              Join teams already using INTRA to respond faster and close more deals.
+            </p>
+            <Link
+              href="/register"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 transition-colors"
+            >
+              Get started free
+              <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
+            </Link>
+          </Reveal>
         </div>
       </section>
 

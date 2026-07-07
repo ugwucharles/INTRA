@@ -15,11 +15,11 @@ export function Button({
   const [isPressed, setIsPressed] = useState(false);
 
   const baseClasses =
-    'font-medium relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]';
+    'font-medium relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/50 focus-visible:ring-offset-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]';
 
   const variantClasses = {
     primary:
-      'bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 hover:from-indigo-500 hover:via-violet-500 hover:to-cyan-500 active:shadow-md',
+      'bg-neutral-950 text-white shadow-lg shadow-neutral-500/30 hover:shadow-xl hover:shadow-neutral-500/40 hover:bg-neutral-800 active:shadow-md',
     secondary:
       'bg-white/95 backdrop-blur-sm text-gray-900 border border-gray-200/80 shadow-sm hover:bg-white hover:shadow-md hover:border-gray-300 active:shadow-sm',
     ghost:
@@ -51,12 +51,6 @@ export function Button({
       {...props}
     >
       <span className="relative z-10">{children}</span>
-      {variant === 'primary' && (
-        <span 
-          className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700"
-          style={{ transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
-        />
-      )}
     </button>
   );
 }

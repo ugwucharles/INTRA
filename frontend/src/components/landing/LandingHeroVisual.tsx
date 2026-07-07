@@ -38,26 +38,16 @@ export function LandingHeroVisual() {
         </p>
       </div>
 
-      {/* Phone overlay */}
-      <div className="absolute -left-4 bottom-[-12px] w-[140px] rounded-[28px] border-[6px] border-neutral-900 bg-neutral-900 shadow-2xl hidden lg:block overflow-hidden">
-        <div className="bg-white px-3 pt-6 pb-4 min-h-[200px]">
-          <p className="text-[10px] font-semibold text-neutral-900 leading-tight">
-            Good morning.
-          </p>
-          <p className="text-[9px] text-neutral-500 mt-1 leading-relaxed">
-            3 open conversations across WhatsApp &amp; Instagram.
-          </p>
-          <div className="mt-3 rounded-full bg-neutral-100 px-2.5 py-1.5 text-[8px] text-neutral-400">
-            Search conversations…
-          </div>
-          <div className="mt-2 space-y-1.5">
-            {['Sarah · Open', 'James · Pending'].map((row) => (
-              <div key={row} className="rounded-lg bg-neutral-50 px-2 py-1.5 text-[8px] text-neutral-600">
-                {row}
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* iPhone mockup - replace with your mockup image */}
+      <div className="absolute -left-8 bottom-[-20px] w-[220px] h-[440px] hidden lg:block">
+        <Image
+          src="/iphone-mockup.png"
+          alt="INTRA mobile app"
+          width={220}
+          height={440}
+          className="w-full h-auto object-contain drop-shadow-2xl"
+          priority
+        />
       </div>
     </div>
   );

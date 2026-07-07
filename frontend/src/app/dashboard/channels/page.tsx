@@ -65,16 +65,6 @@ const CHANNELS: {
       },
     ],
   },
-  {
-    key: 'EMAIL',
-    label: 'Email',
-    description: 'Use email as an inbound/outbound support channel.',
-    fields: [
-      { name: 'displayName', label: 'Display Name', placeholder: 'Support Inbox' },
-      { name: 'pageId', label: 'Inbox Address', placeholder: 'support@yourdomain.com', required: true },
-      { name: 'accessToken', label: 'Access Token or API Key', placeholder: 'smtp/api token', required: true },
-    ],
-  },
 ];
 
 interface ChannelFormState {

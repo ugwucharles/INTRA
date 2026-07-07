@@ -145,15 +145,6 @@ export class MessagesService {
             where: { id: message.id, orgId: currentUser.orgId },
             data: { status: MessageStatus.SENT },
           });
-        } else if ((customer.source as string) === 'EMAIL' && customer.email) {
-          // Auto-send outbound messages for EMAIL
-          await this.emailService.sendReply(
-            currentUser.orgId,
-            conversation.id,
-            customer.email,
-            dto.content,
-            message.id,
-          );
         }
       }
     } catch (err) {

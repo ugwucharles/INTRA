@@ -418,23 +418,6 @@ export class ConversationsService {
               customer,
               RATING_PROMPT,
             );
-          } else if (customer.source === $Enums.Channel.EMAIL && customer.email) {
-            const msg = await this.prisma.message.create({
-              data: {
-                orgId: currentUser.orgId,
-                conversationId: conversation.id,
-                senderType: 'STAFF',
-                senderId: currentUser.userId,
-                content: RATING_PROMPT,
-              },
-            });
-            await this.emailService.sendReply(
-              currentUser.orgId,
-              conversation.id,
-              customer.email,
-              RATING_PROMPT,
-              msg.id,
-            );
           }
         }
       } catch (err) {

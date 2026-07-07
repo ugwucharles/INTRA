@@ -15,7 +15,6 @@ import { DepartmentsModule } from './departments/departments.module';
 import { RoutingModule } from './routing/routing.module';
 import { TagsModule } from './tags/tags.module';
 import { SavedRepliesModule } from './saved-replies/saved-replies.module';
-import { EmailModule } from './email/email.module';
 import { SocketModule } from './socket/socket.module';
 import { SocialAccountsModule } from './social-accounts/social-accounts.module';
 import { AdminModule } from './admin/admin.module';
@@ -37,8 +36,6 @@ import { TenantContextInterceptor } from './tenancy/tenant-context.interceptor';
     RoutingModule,
     TagsModule,
     SavedRepliesModule,
-    EmailModule,
-    SocketModule,
     SocialAccountsModule,
     AdminModule,
     BillingModule,

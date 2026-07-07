@@ -38,8 +38,6 @@ export function useContactsList() {
           c.source === 'INSTAGRAM' ||
           c.source === 'WHATSAPP';
         if (!social) return false;
-      } else if (channelFilter === 'email') {
-        if (c.source !== 'EMAIL') return false;
       }
 
       if (!q) return true;

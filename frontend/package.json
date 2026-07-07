@@ -10,6 +10,7 @@
     "strip-logo-white": "node scripts/strip-logo-white.cjs"
   },
   "dependencies": {
+    "lucide-react": "^1.23.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",

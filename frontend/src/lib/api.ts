@@ -69,8 +69,8 @@ export interface Customer {
   name?: string;
   email?: string;
   phone?: string;
-  // Optional: source channel for this customer (e.g. FACEBOOK_MESSENGER, INSTAGRAM, WHATSAPP, EMAIL)
-  source?: 'FACEBOOK_MESSENGER' | 'INSTAGRAM' | 'WHATSAPP' | 'EMAIL';
+  // Optional: source channel for this customer (e.g. FACEBOOK_MESSENGER, INSTAGRAM, WHATSAPP)
+  source?: 'FACEBOOK_MESSENGER' | 'INSTAGRAM' | 'WHATSAPP';
   // Optional: external identifier from third-party channels (e.g. Facebook PSID)
   externalId?: string;
   // Whether this customer has been explicitly saved as a contact in the CRM
@@ -172,7 +172,7 @@ export interface ConversationNote {
   author?: Pick<User, 'id' | 'name' | 'email'>;
 }
 
-export type SocialChannel = 'FACEBOOK_MESSENGER' | 'INSTAGRAM' | 'WHATSAPP' | 'EMAIL';
+export type SocialChannel = 'FACEBOOK_MESSENGER' | 'INSTAGRAM' | 'WHATSAPP';
 
 export interface SocialAccount {
   id: string;

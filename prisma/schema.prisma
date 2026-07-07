@@ -326,7 +326,6 @@ enum Channel {
   FACEBOOK_MESSENGER
   INSTAGRAM
   WHATSAPP
-  EMAIL
 }
 
 enum MessageStatus {

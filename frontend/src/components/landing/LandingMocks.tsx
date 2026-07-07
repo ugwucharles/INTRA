@@ -79,8 +79,8 @@ export function SearchMock() {
 export function ContextMock() {
   return (
     <div className="landing-hover-lift relative mx-auto max-w-[640px]">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#e8dff5] via-transparent to-transparent rounded-[40px] blur-2xl scale-110 opacity-70" />
-      <div className="kinso-ambient-shimmer overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] ring-1 ring-violet-100/70">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#f0f0f0] via-transparent to-transparent rounded-[40px] blur-2xl scale-110 opacity-70" />
+      <div className="kinso-ambient-shimmer overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] ring-1 ring-neutral-100/70">
         <div className="p-4 border-b border-neutral-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-neutral-200" />
@@ -134,16 +134,16 @@ export function RoutingMock() {
         ].map((c) => (
           <div
             key={c.name}
-            className="rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm p-4 flex gap-3 transition-all duration-300 hover:bg-white/[0.1] hover:-translate-y-0.5"
+            className="rounded-2xl border border-neutral-200 bg-white p-4 flex gap-3 transition-all duration-300 hover:border-neutral-300 hover:shadow-sm"
           >
-            <div className="w-10 h-10 rounded-full bg-neutral-700 shrink-0" />
+            <div className="w-10 h-10 rounded-full bg-neutral-200 shrink-0" />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-white">{c.name}</span>
+                <span className="text-sm font-semibold text-neutral-900">{c.name}</span>
                 <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${c.tagColor}`}>{c.tag}</span>
               </div>
               <p className="text-[10px] text-neutral-500 mt-0.5">{c.ch}</p>
-              <p className="text-xs text-neutral-400 mt-1 truncate">{c.msg}</p>
+              <p className="text-xs text-neutral-600 mt-1 truncate">{c.msg}</p>
             </div>
           </div>
         ))}
@@ -155,24 +155,24 @@ export function RoutingMock() {
 export function ContactProfileMock() {
   return (
     <div className="landing-hover-lift relative max-w-[400px] ml-auto">
-      <div className="rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.11] to-white/[0.03] backdrop-blur-sm p-5 shadow-[0_18px_46px_-26px_rgba(56,189,248,0.45)]">
+      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-14 h-14 rounded-full bg-neutral-700" />
+          <div className="w-14 h-14 rounded-full bg-neutral-200" />
           <div>
-            <p className="text-base font-semibold text-white">Natasha Corwin</p>
-            <p className="text-xs text-neutral-400">natasha@company.com</p>
+            <p className="text-base font-semibold text-neutral-900">Natasha Corwin</p>
+            <p className="text-xs text-neutral-500">natasha@company.com</p>
           </div>
         </div>
         <div className="flex gap-2 mb-4">
           {['FB', 'IG', 'WA'].map((icon) => (
-            <span key={icon} className="w-8 h-8 rounded-lg bg-neutral-800 flex items-center justify-center text-[10px] text-neutral-400">
+            <span key={icon} className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-[10px] text-neutral-600">
               {icon}
             </span>
           ))}
         </div>
-        <p className="text-sm text-neutral-400 leading-relaxed">
+        <p className="text-sm text-neutral-600 leading-relaxed">
           Enterprise lead · 4 conversations · tagged{' '}
-          <span className="text-amber-400/90">VIP</span>. Notes and history stay on the contact profile.
+          <span className="text-amber-600">VIP</span>. Notes and history stay on the contact profile.
         </p>
       </div>
     </div>

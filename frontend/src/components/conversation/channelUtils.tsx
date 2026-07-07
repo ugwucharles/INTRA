@@ -10,8 +10,6 @@ export function getCustomerDisplayName(customer?: Customer): string {
       return 'Instagram user';
     case 'WHATSAPP':
       return 'WhatsApp user';
-    case 'EMAIL':
-      return 'Email user';
     default:
       return customer.email || 'Unknown Customer';
   }
@@ -29,8 +27,6 @@ export function getChannelLabel(source?: Customer['source']): string | null {
       return 'Instagram';
     case 'WHATSAPP':
       return 'WhatsApp';
-    case 'EMAIL':
-      return 'Email';
     default:
       return null;
   }
@@ -44,8 +40,6 @@ export function getChannelColor(source?: Customer['source']): string {
       return 'text-pink-600 bg-pink-50';
     case 'WHATSAPP':
       return 'text-green-600 bg-green-50';
-    case 'EMAIL':
-      return 'text-gray-600 bg-gray-100';
     default:
       return 'text-gray-600 bg-gray-100';
   }

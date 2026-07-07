@@ -21,9 +21,9 @@ const SECTION_THEMES = [
     glow: 'from-sky-300/70 via-cyan-200/45 to-transparent',
   },
   {
-    chip: 'text-violet-700 bg-violet-100/90 border-violet-200/70',
-    panel: 'from-[#f3f0ff] via-white to-[#f0fffb]',
-    glow: 'from-violet-300/65 via-fuchsia-200/40 to-transparent',
+    chip: 'text-neutral-700 bg-neutral-100/90 border-neutral-200/70',
+    panel: 'from-[#f5f5f5] via-white to-[#f0f0f0]',
+    glow: 'from-neutral-300/70 via-neutral-200/45 to-transparent',
   },
 ];
 

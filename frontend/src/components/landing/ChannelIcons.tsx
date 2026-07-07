@@ -26,20 +26,10 @@ export function WhatsAppIcon({ className = iconClass }: { className?: string }) 
   );
 }
 
-export function EmailIcon({ className = iconClass }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="1.75" aria-hidden>
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
-    </svg>
-  );
-}
-
 const CHANNELS = [
   { name: 'Messenger', Icon: MessengerIcon },
   { name: 'Instagram', Icon: InstagramIcon },
   { name: 'WhatsApp', Icon: WhatsAppIcon },
-  { name: 'Email', Icon: EmailIcon },
 ] as const;
 
 export function ChannelIconRow() {
