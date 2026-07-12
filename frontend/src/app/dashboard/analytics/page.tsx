@@ -102,10 +102,6 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const load = async () => {
-      if (user?.plan && !user.plan.analytics) {
-        setLoading(false);
-        return;
-      }
       try {
         setLoading(true);
         const [convs, customers, staffList] = await Promise.all([
@@ -216,25 +212,6 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (user?.plan && !user.plan.analytics) {
-    return shell(
-      <DashboardPageShell title="Analytics" maxWidth="md">
-        <div className="rounded-xl bg-gray-50/80 ring-1 ring-inset ring-black/[0.04] p-6 text-center">
-          <p className="text-sm text-gray-600">
-            Advanced analytics are included on the Business plan. Your workspace is on{' '}
-            <span className="font-medium text-gray-900">
-              {user.subscriptionPlan === 'BUSINESS'
-                ? 'Business'
-                : user.subscriptionPlan === 'GROWTH'
-                  ? 'Growth'
-                  : 'Starter'}
-            </span>
-            .
-          </p>
-        </div>
-      </DashboardPageShell>,
-    );
-  }
 
   const rangeToggle = (
     <div

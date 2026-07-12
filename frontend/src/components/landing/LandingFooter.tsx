@@ -16,7 +16,7 @@ export function LandingFooter() {
             <p className="text-sm font-semibold text-neutral-950 mb-4">Product</p>
             <ul className="space-y-3 text-sm text-neutral-600">
               <li><a href="#features" className="hover:text-neutral-950 transition-colors">Features</a></li>
-              <li><a href="#pricing" className="hover:text-neutral-950 transition-colors">Pricing</a></li>
+
               <li><a href="#faq" className="hover:text-neutral-950 transition-colors">FAQs</a></li>
             </ul>
           </div>

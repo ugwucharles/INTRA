@@ -217,66 +217,6 @@ export default function LandingPage() {
       </main>
 
 
-      {/* Pricing */}
-      <section id="pricing" className="py-20 sm:py-32 bg-neutral-50">
-        <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
-          <Reveal className="text-center max-w-2xl mx-auto">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Pricing</p>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-neutral-950">
-              Simple, transparent pricing
-            </h2>
-            <p className="mt-4 text-base text-neutral-600 leading-relaxed">
-              Start free, scale as you grow. No hidden fees, no surprises.
-            </p>
-          </Reveal>
-
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { name: 'Starter', price: '$49', period: '/month', desc: 'Perfect for small teams getting started', features: ['3 team seats', 'All channels included', 'Unified inbox', 'Basic analytics'] },
-              { name: 'Growth', price: '$99', period: '/month', desc: 'For growing teams with automation needs', features: ['10 team seats', 'Routing & automation', 'Advanced analytics', 'Priority support'], highlight: true },
-              { name: 'Business', price: '$199', period: '/month', desc: 'For organizations at scale', features: ['Unlimited team seats', 'Custom workflows', 'SLA management', 'Dedicated support'] },
-            ].map((p) => (
-              <Reveal key={p.name} delay={100}>
-                <div className={`relative rounded-3xl p-8 ${
-                  p.highlight
-                    ? 'bg-neutral-900 text-white border-2 border-neutral-900'
-                    : 'bg-white border border-neutral-200'
-                }`}>
-                  {p.highlight && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-neutral-900 text-white text-xs font-semibold rounded-full">
-                      Most popular
-                    </div>
-                  )}
-                  <h3 className={`text-xl font-semibold ${p.highlight ? 'text-white' : 'text-neutral-950'}`}>{p.name}</h3>
-                  <p className={`mt-2 text-sm ${p.highlight ? 'text-neutral-400' : 'text-neutral-600'}`}>{p.desc}</p>
-                  <div className="mt-6">
-                    <span className={`text-4xl font-bold ${p.highlight ? 'text-white' : 'text-neutral-950'}`}>{p.price}</span>
-                    <span className={`text-sm ${p.highlight ? 'text-neutral-400' : 'text-neutral-600'}`}>{p.period}</span>
-                  </div>
-                  <ul className="mt-8 space-y-4">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-3">
-                        <Check className={`w-5 h-5 mt-0.5 ${p.highlight ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                        <span className={`text-sm ${p.highlight ? 'text-neutral-300' : 'text-neutral-600'}`}>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/register"
-                    className={`mt-8 block w-full rounded-xl py-3 text-center text-sm font-semibold transition-colors ${
-                      p.highlight
-                        ? 'bg-white text-neutral-900 hover:bg-neutral-100'
-                        : 'bg-neutral-900 text-white hover:bg-neutral-800'
-                    }`}
-                  >
-                    Get started
-                  </Link>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* FAQ */}
       <section id="faq" className="py-20 sm:py-32 bg-white">

@@ -89,7 +89,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
   const navItems = mainNavigation;
-  const analyticsLocked = user?.plan != null && !user.plan.analytics;
+
   const handleNavIconClick = (e: React.MouseEvent) => {
     if (!sidebarCollapsed) return;
     e.preventDefault();
@@ -161,11 +161,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     </span>
                     {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
-                  {!sidebarCollapsed && item.name === 'Analytics' && analyticsLocked && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-neutral-900 text-white rounded-full shadow-md">
-                      Pro
-                    </span>
-                  )}
+
                   {!sidebarCollapsed && item.badge && (
                     <span className="px-2 py-0.5 text-xs font-medium bg-white/90 text-slate-700 rounded-full shadow-sm">
                       {item.badge}
