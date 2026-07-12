@@ -112,7 +112,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         }`}
       >
         {/* Logo */}
-        <div className={`h-16 border-b border-indigo-200/70 flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
+        <div className={`h-16 border-b border-gray-200 flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
           <Link href="/dashboard/conversations" className="flex items-center">
             <Image
               src="/intra.logo.1.png"
@@ -127,7 +127,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               type="button"
               aria-label="Collapse sidebar"
               onClick={() => setSidebarCollapsed(true)}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-500 hover:bg-indigo-50"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-500 hover:bg-gray-100"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -178,7 +178,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom Navigation */}
-        <div className="px-3 py-4 border-t border-indigo-200/70">
+        <div className="px-3 py-4 border-t border-gray-200">
           <div className="space-y-1">
             {bottomNavigation.map((item) => {
               const isActive = isActiveRoute(item.href);
@@ -229,9 +229,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* User Profile */}
-        <div className="px-3 py-4 border-t border-indigo-200/70">
+        <div className="px-3 py-4 border-t border-gray-200">
           <div className={`flex items-center px-2 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-cyan-50 flex items-center justify-center overflow-hidden border border-white shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-neutral-200 flex items-center justify-center overflow-hidden border border-white shadow-sm">
               {user?.profilePicture ? (
                 <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
               ) : null}
@@ -252,7 +252,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <p className="text-sm font-bold text-slate-900 truncate">
                   {user?.name || 'User'}
                 </p>
-                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight truncate">
+                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tight truncate">
                   {(user?.orgName && user.orgName.trim() !== '') ? user.orgName : 'No Organization'}
                 </p>
               </div>

@@ -26,7 +26,7 @@ export function DashboardPageShell({
 }: DashboardPageShellProps) {
   return (
     <div className="h-full flex flex-col bg-transparent min-h-0">
-      <header className="flex-shrink-0 intra-dashboard-surface-strong border-b border-indigo-200/70 px-4 pt-4 pb-3">
+      <header className="flex-shrink-0 intra-dashboard-surface-strong border-b border-gray-200 px-4 pt-4 pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-slate-900">{title}</h1>

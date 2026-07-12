@@ -46,7 +46,7 @@ div[style*="position: fixed"][style*="bottom: 0px"][style*="right: 0px"] {
 }
 
 :root {
-  --background: #f2f5ff;
+  --background: #f8fafc;
   --foreground: #171717;
 
   /* FlymyMall Brand Colors */
@@ -76,17 +76,17 @@ div[style*="position: fixed"][style*="bottom: 0px"][style*="right: 0px"] {
   --error: #EF4444;
   --error-light: #FEE2E2;
 
-  /* Dashboard system palette (vibrant high-contrast accents) */
-  --dashboard-accent: #6366f1;
-  --dashboard-accent-2: #0ea5e9;
-  --dashboard-accent-3: #ec4899;
-  --dashboard-accent-soft: #c7d2fe;
-  --dashboard-base: #e0e7ff;
+  /* Dashboard system palette (clean neutrals) */
+  --dashboard-accent: #000000;
+  --dashboard-accent-2: #3f3f46;
+  --dashboard-accent-3: #71717a;
+  --dashboard-accent-soft: #e4e4e7;
+  --dashboard-base: #f4f4f5;
   --dashboard-surface: rgba(255, 255, 255, 0.92);
   --dashboard-surface-strong: rgba(255, 255, 255, 0.98);
-  --dashboard-border: rgba(99, 102, 241, 0.2);
-  --dashboard-shadow: 0 32px 80px -48px rgba(99, 102, 241, 0.35);
-  --dashboard-glow: 0 0 40px rgba(99, 102, 241, 0.15);
+  --dashboard-border: rgba(0, 0, 0, 0.08);
+  --dashboard-shadow: 0 16px 48px -24px rgba(0, 0, 0, 0.1);
+  --dashboard-glow: 0 0 20px rgba(0, 0, 0, 0.01);
 }
 
 @theme inline {
@@ -110,11 +110,7 @@ div[style*="position: fixed"][style*="bottom: 0px"][style*="right: 0px"] {
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 9% 10%, rgba(129, 140, 248, 0.26) 0%, transparent 32%),
-    radial-gradient(circle at 88% 16%, rgba(34, 211, 238, 0.24) 0%, transparent 34%),
-    radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.16) 0%, transparent 40%),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -122,11 +118,7 @@ body {
 }
 
 .intra-dashboard-shell {
-  background:
-    radial-gradient(circle at 8% 0%, rgba(99, 102, 241, 0.28) 0%, transparent 38%),
-    radial-gradient(circle at 92% 14%, rgba(14, 165, 233, 0.24) 0%, transparent 40%),
-    radial-gradient(circle at 50% 100%, rgba(236, 72, 153, 0.12) 0%, transparent 42%),
-    linear-gradient(180deg, #e0e7ff 0%, #dbe4ff 54%, #d6e0ff 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .intra-dashboard-surface {
@@ -420,12 +412,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(79, 70, 229, 0.28);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 70, 229, 0.46);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 /* Smooth transitions for interactive elements */

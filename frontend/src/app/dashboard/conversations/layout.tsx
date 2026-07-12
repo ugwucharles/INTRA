@@ -16,7 +16,7 @@ export default function ConversationsLayout({ children }: { children: React.Reac
         <div className="h-full flex overflow-hidden bg-transparent">
           {/* Inbox list — full width on mobile when no thread selected */}
           <aside
-            className={`flex-shrink-0 flex flex-col border-r border-indigo-200/70 bg-white/80 backdrop-blur-md w-full lg:w-[340px] xl:w-[380px] ${
+            className={`flex-shrink-0 flex flex-col border-r border-gray-200 bg-white/80 backdrop-blur-md w-full lg:w-[340px] xl:w-[380px] ${
               hasActiveConversation ? 'hidden lg:flex' : 'flex'
             }`}
           >

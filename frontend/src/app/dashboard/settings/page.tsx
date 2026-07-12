@@ -100,7 +100,7 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={() => document.getElementById('avatar-upload')?.click()}
-          className="relative w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-cyan-50 overflow-hidden ring-2 ring-white shadow-sm flex-shrink-0 group"
+          className="relative w-16 h-16 rounded-full bg-gray-100 overflow-hidden ring-2 ring-white shadow-sm flex-shrink-0 group"
         >
           {profilePicture ? (
             <img src={profilePicture} alt="" className="w-full h-full object-cover" />
@@ -116,10 +116,10 @@ export default function SettingsPage() {
         <input id="avatar-upload" type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
         <div>
           <p className="text-sm font-semibold text-slate-900">{user?.name}</p>
-          <p className="text-xs text-indigo-600">{user?.role}</p>
+          <p className="text-xs text-gray-600">{user?.role}</p>
         </div>
       </div>
-      <form onSubmit={handleUpdateProfile} className="rounded-xl bg-white/80 ring-1 ring-inset ring-indigo-200/80 p-5 space-y-4">
+      <form onSubmit={handleUpdateProfile} className="rounded-xl bg-white/80 ring-1 ring-inset ring-gray-200 p-5 space-y-4">
         <h2 className="text-sm font-semibold text-slate-900">Profile</h2>
         <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} required />
         <Input
@@ -130,7 +130,7 @@ export default function SettingsPage() {
           required
         />
 
-        <div className="pt-2 border-t border-indigo-100/90 space-y-3">
+        <div className="pt-2 border-t border-gray-100 space-y-3">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Security</p>
           <Input
             label="New password"

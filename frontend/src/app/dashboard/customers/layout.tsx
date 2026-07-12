@@ -15,7 +15,7 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
       <DashboardLayout>
         <div className="h-full flex overflow-hidden bg-transparent">
           <aside
-            className={`flex-shrink-0 flex flex-col border-r border-indigo-200/70 bg-white/80 backdrop-blur-md w-full lg:w-[340px] xl:w-[380px] ${
+            className={`flex-shrink-0 flex flex-col border-r border-gray-200 bg-white/80 backdrop-blur-md w-full lg:w-[340px] xl:w-[380px] ${
               hasActiveContact ? 'hidden lg:flex' : 'flex'
             }`}
           >
