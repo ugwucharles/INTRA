@@ -69,7 +69,7 @@ export function ContactList({ selectedId }: ContactListProps) {
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-indigo-200/70 intra-dashboard-surface-strong">
+      <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-200 intra-dashboard-surface-strong">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-lg font-semibold text-slate-900">Contacts</h1>
           <div className="flex items-center gap-2">
@@ -82,8 +82,8 @@ export function ContactList({ selectedId }: ContactListProps) {
                   flex items-center justify-center w-8 h-8 rounded-lg transition-colors
                   ${
                     showAddForm
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }
                 `}
                 aria-label={showAddForm ? 'Cancel add contact' : 'Add contact'}
@@ -114,12 +114,12 @@ export function ContactList({ selectedId }: ContactListProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search contacts…"
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white/80 border border-indigo-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-300 transition-colors"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:bg-white focus:border-gray-300 transition-colors"
           />
         </div>
 
         <div
-          className="mt-3 flex p-1 rounded-xl bg-white/75 ring-1 ring-inset ring-indigo-200/80"
+          className="mt-3 flex p-1 rounded-xl bg-white/75 ring-1 ring-inset ring-gray-200"
           role="tablist"
           aria-label="Filter contacts by channel"
         >
@@ -137,7 +137,7 @@ export function ContactList({ selectedId }: ContactListProps) {
                   transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-50 to-cyan-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/70'
+                      ? 'bg-gray-100 text-gray-900 shadow-sm ring-1 ring-gray-200'
                       : 'text-slate-500 hover:text-slate-700'
                   }
                 `}
@@ -149,7 +149,7 @@ export function ContactList({ selectedId }: ContactListProps) {
         </div>
 
         {isAdmin && showAddForm && (
-          <form onSubmit={handleAddContact} className="mt-3 p-3 rounded-xl bg-white/75 ring-1 ring-inset ring-indigo-200/80 space-y-2.5">
+          <form onSubmit={handleAddContact} className="mt-3 p-3 rounded-xl bg-white/75 ring-1 ring-inset ring-gray-200 space-y-2.5">
             <Input
               label="Name"
               value={formData.name}
@@ -207,7 +207,7 @@ export function ContactList({ selectedId }: ContactListProps) {
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-indigo-100/80">
+          <ul className="divide-y divide-gray-100">
             {customers.map((customer) => (
               <ContactRow key={customer.id} customer={customer} isActive={activeId === customer.id} />
             ))}
@@ -229,11 +229,11 @@ function ContactRow({ customer, isActive }: { customer: Customer; isActive: bool
       <Link
         href={`/dashboard/customers/${customer.id}`}
         className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-          isActive ? 'bg-gradient-to-r from-indigo-50 to-cyan-50' : 'hover:bg-white/70'
+          isActive ? 'bg-gray-50' : 'hover:bg-white/70'
         }`}
       >
         <div className="flex-shrink-0">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-100 to-cyan-50 overflow-hidden flex items-center justify-center">
+          <div className="w-11 h-11 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
             {customer.avatarUrl ? (
               <img src={customer.avatarUrl} alt="" className="w-full h-full object-cover" />
             ) : (
