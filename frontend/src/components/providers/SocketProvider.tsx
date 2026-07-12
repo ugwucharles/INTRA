@@ -38,7 +38,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const url =
       process.env.NEXT_PUBLIC_API_URL ||
       (process.env.NODE_ENV === 'production'
-        ? 'https://api.intrabox.com.ng'
+        ? 'https://intra-api.onrender.com'
         : 'http://localhost:3000');
     console.log('Socket: Attempting connection to', url, 'with token', token.substring(0, 10) + '...');
     

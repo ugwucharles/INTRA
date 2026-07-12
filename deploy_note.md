@@ -3,7 +3,7 @@
 This document summarizes the steps, challenges, and solutions encountered while deploying the INTRA project (NestJS backend & Next.js frontend) to a cPanel environment.
 
 ## 📁 Environment Information
-- **Domain**: `intrabox.com.ng` (Frontend) / `api.intrabox.com.ng` (Backend)
+- **Domain**: `intra-web.onrender.com` (Frontend) / `intra-api.onrender.com` (Backend)
 - **Node.js Version**: 20.20.0 (CloudLinux Node.js Selector)
 - **Database**: PostgreSQL (via standard connection string)
 
@@ -67,5 +67,5 @@ This document summarizes the steps, challenges, and solutions encountered while 
 - [ ] **Startup File (Frontend)**: `standalone/server.js`
 - [ ] **Environment Variables**:
   - `DATABASE_URL` (Backend)
-  - `NEXT_PUBLIC_API_URL=https://api.intrabox.com.ng` (Frontend)
+  - `NEXT_PUBLIC_API_URL=https://intra-api.onrender.com` (Frontend)
   - `NODE_ENV=production`

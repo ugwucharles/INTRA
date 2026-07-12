@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient, UserRole, Channel, TagType, ConversationStatus, SenderType } from '@prisma/client';
+import { PrismaClient, UserRole, Channel, TagType, ConversationStatus, SenderType, AuditAction } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -16,6 +16,7 @@ async function main() {
   const org = await prisma.organization.create({
     data: {
       name: 'Demo Org',
+      subscriptionPlan: 'BUSINESS',
     },
   });
 
@@ -339,6 +340,99 @@ async function main() {
     }
   }
   console.log('--- EXTRA SEEDING COMPLETE ---');
+
+  // --- ANALYTICS DATA ---
+  console.log('Seeding analytics data...');
+
+  // Create more conversations for analytics
+  const moreCustomers = [
+    { name: 'Alex Johnson', email: 'alex@example.com', source: Channel.WHATSAPP },
+    { name: 'Emma Davis', email: 'emma@example.com', source: Channel.INSTAGRAM },
+    { name: 'Michael Brown', email: 'michael@example.com', source: Channel.FACEBOOK_MESSENGER },
+    { name: 'Sophie Wilson', email: 'sophie@example.com', source: Channel.WHATSAPP },
+    { name: 'James Anderson', email: 'james@example.com', source: Channel.INSTAGRAM },
+  ];
+
+  for (const customerData of moreCustomers) {
+    const customer = await prisma.customer.create({
+      data: {
+        orgId: extraOrgId,
+        name: customerData.name,
+        email: customerData.email,
+        source: customerData.source,
+        externalId: `${customerData.source.toLowerCase()}-${Math.random().toString(36).substr(2, 9)}`,
+        pageId: `${customerData.source.toLowerCase()}-page-1`,
+        isSaved: true,
+      },
+    });
+
+    // Create conversations with different statuses
+    const statuses = [ConversationStatus.OPEN, ConversationStatus.CLOSED, ConversationStatus.PENDING, ConversationStatus.RESOLVED];
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    const randomAgent = [agentBob.id, agentCarol.id][Math.floor(Math.random() * 2)];
+
+    const conversation = await prisma.conversation.create({
+      data: {
+        orgId: extraOrgId,
+        customerId: customer.id,
+        assignedTo: randomAgent,
+        status: randomStatus,
+        departmentId: Math.random() > 0.5 ? salesDept.id : supportDept.id,
+        messages: {
+          create: [
+            {
+              orgId: extraOrgId,
+              senderType: SenderType.CUSTOMER,
+              content: `Hello, I have a question about your services.`,
+              externalId: `msg-${Math.random().toString(36).substr(2, 9)}`,
+            },
+            {
+              orgId: extraOrgId,
+              senderType: SenderType.STAFF,
+              senderId: randomAgent,
+              content: `Hi ${customer.name || 'there'}! How can I help you today?`,
+              externalId: `msg-${Math.random().toString(36).substr(2, 9)}`,
+            },
+          ],
+        },
+      },
+    });
+
+    // Add some conversation notes
+    if (Math.random() > 0.5) {
+      await prisma.conversationNote.create({
+        data: {
+          orgId: extraOrgId,
+          conversationId: conversation.id,
+          authorId: randomAgent,
+          content: 'Customer inquiry about pricing.',
+        },
+      });
+    }
+  }
+
+  // Create audit logs for analytics
+  const auditActions = [
+    AuditAction.MESSAGE_SENT,
+    AuditAction.CONVERSATION_ASSIGNED,
+    AuditAction.CONVERSATION_CLOSED,
+    AuditAction.CONVERSATION_STATUS_CHANGED,
+    AuditAction.SAVED_REPLY_CREATED,
+  ];
+
+  for (let i = 0; i < 20; i++) {
+    await prisma.auditLog.create({
+      data: {
+        orgId: extraOrgId,
+        action: auditActions[Math.floor(Math.random() * auditActions.length)],
+        userId: [admin.id, agentBob.id, agentCarol.id][Math.floor(Math.random() * 3)],
+        targetId: `target-${i}`,
+        targetType: 'Conversation',
+      },
+    });
+  }
+
+  console.log('--- ANALYTICS DATA SEEDING COMPLETE ---');
 }
 
 main()

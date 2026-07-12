@@ -18,7 +18,7 @@ export default function LoginPage() {
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL ||
     (process.env.NODE_ENV === 'production'
-      ? 'https://api.intrabox.com.ng'
+      ? 'https://intra-api.onrender.com'
       : 'http://localhost:3000');
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -17,7 +17,6 @@ import {
 const CHANNEL_FILTERS: { id: ContactChannelFilter; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'social', label: 'Social' },
-  { id: 'email', label: 'Email' },
 ];
 
 interface ContactListProps {

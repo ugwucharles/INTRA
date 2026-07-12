@@ -12,8 +12,8 @@ import { PrismaService } from '../prisma/prisma.service';
 
 const defaultOrigins =
   process.env.NODE_ENV === 'production'
-    ? 'https://intrabox.com.ng,https://www.intrabox.com.ng'
-    : 'http://localhost:3001,http://localhost:3000,https://intrabox.com.ng,https://www.intrabox.com.ng';
+    ? 'https://intra-web.onrender.com'
+    : 'http://localhost:3001,http://localhost:3000,https://intra-web.onrender.com';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? defaultOrigins)
   .split(',')

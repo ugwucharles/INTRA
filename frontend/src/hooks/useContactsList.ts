@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, Customer } from '@/lib/api';
 
-export type ContactChannelFilter = 'all' | 'social' | 'email';
+export type ContactChannelFilter = 'all' | 'social';
 
 export function useContactsList() {
   const [customers, setCustomers] = useState<Customer[]>([]);

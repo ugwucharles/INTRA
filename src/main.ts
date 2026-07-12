@@ -128,8 +128,8 @@ async function bootstrap() {
   // ── CORS — production domains + typical local dev (override with ALLOWED_ORIGINS)
   const defaultOrigins =
     process.env.NODE_ENV === 'production'
-      ? 'https://intrabox.com.ng,https://www.intrabox.com.ng'
-      : 'http://localhost:3001,http://localhost:3000,https://intrabox.com.ng,https://www.intrabox.com.ng';
+      ? 'https://intra-web.onrender.com'
+      : 'http://localhost:3001,http://localhost:3000,https://intra-web.onrender.com';
   const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? defaultOrigins)
     .split(',')
     .map((o) => o.trim());

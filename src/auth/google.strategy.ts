@@ -7,7 +7,7 @@ import * as crypto from 'crypto';
 function googleCallbackUrl(): string {
   const defaultCallback =
     process.env.NODE_ENV === 'production'
-      ? 'https://api.intrabox.com.ng/auth/google/callback'
+      ? 'https://intra-api.onrender.com/auth/google/callback'
       : `http://localhost:${process.env.PORT || '3000'}/auth/google/callback`;
   const raw = process.env.GOOGLE_CALLBACK_URL?.trim() || defaultCallback;
   if (

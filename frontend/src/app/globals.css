@@ -142,9 +142,9 @@ body {
 }
 
 .intra-dashboard-surface-strong {
-  background: var(--dashboard-surface-strong);
-  border: 1px solid var(--dashboard-border);
-  box-shadow: 0 20px 46px -40px rgba(37, 47, 116, 0.72);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 46px -40px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(16px);
 }
 

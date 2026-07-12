@@ -58,7 +58,7 @@ export class AuthController {
 
     const defaultFrontendUrl =
       process.env.NODE_ENV === 'production'
-        ? 'https://intrabox.com.ng'
+        ? 'https://intra-web.onrender.com'
         : 'http://localhost:3001';
     let frontendUrl = (process.env.FRONTEND_URL || defaultFrontendUrl).replace(
       /\/$/,
@@ -98,6 +98,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() user: JwtPayload) {
     // Example protected route using orgId from the current user.
+    return this.authService.getMe(user);
+  }
+
+  @Get('status')
+  @UseGuards(JwtAuthGuard)
+  async getStatus(@CurrentUser() user: JwtPayload) {
     return this.authService.getMe(user);
   }
 

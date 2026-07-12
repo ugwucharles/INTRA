@@ -29,13 +29,8 @@ export function LandingFooter() {
             </ul>
           </div>
         </div>
-        <div className="mt-14 pt-8 border-t border-neutral-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="mt-14 pt-8 border-t border-neutral-200 flex justify-center">
           <p className="text-xs text-neutral-500">© {new Date().getFullYear()} INTRA BOX. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <a href="#" className="text-sm text-neutral-600 hover:text-neutral-950 transition-colors">Twitter</a>
-            <a href="#" className="text-sm text-neutral-600 hover:text-neutral-950 transition-colors">GitHub</a>
-            <a href="#" className="text-sm text-neutral-600 hover:text-neutral-950 transition-colors">LinkedIn</a>
-          </div>
         </div>
       </div>
     </footer>

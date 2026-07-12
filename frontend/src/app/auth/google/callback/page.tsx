@@ -29,7 +29,7 @@ export default function GoogleCallbackPage() {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         (process.env.NODE_ENV === 'production'
-          ? 'https://api.intrabox.com.ng'
+          ? 'https://intra-api.onrender.com'
           : 'http://localhost:3000');
       const meUrl = `${apiUrl.replace(/\/$/, '')}/auth/me?_t=${Date.now()}`;
       const meResponse = await fetch(meUrl, {
@@ -96,7 +96,7 @@ export default function GoogleCallbackPage() {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL ||
       (process.env.NODE_ENV === 'production'
-        ? 'https://api.intrabox.com.ng'
+        ? 'https://intra-api.onrender.com'
         : 'http://localhost:3000');
     const exchangeUrl = `${apiUrl.replace(/\/$/, '')}/auth/google/exchange`;
     console.log(`[Google Auth] Attempting code exchange at: ${exchangeUrl}`);
