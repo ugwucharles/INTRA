@@ -61,9 +61,9 @@ function RegisterForm() {
             <Image
               src="/intra.logo.1.png"
               alt="Logo"
-              width={120}
-              height={40}
-              className="h-10 w-auto"
+              width={84}
+              height={28}
+              className="h-7 w-auto"
             />
           </div>
           <p className="text-sm sm:text-base text-gray-600">Create your organization</p>
