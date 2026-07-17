@@ -393,10 +393,10 @@ export function ContactProfileView({ customerId }: ContactProfileViewProps) {
         )}
 
         {activeTab === 'tags' && (
-          <div className="p-4 max-w-lg">
+          <div className="p-4 max-w-lg space-y-6">
             {allCustomerTags.length === 0 ? (
               <div className="text-sm text-gray-500 space-y-1">
-                <p>No contact tags yet.</p>
+                <p>No contact tags created yet.</p>
                 {isAdmin && (
                   <p className="text-xs text-gray-400">
                     Create tags under Routing → Tags (e.g. VIP), then assign them here.
@@ -404,32 +404,65 @@ export function ContactProfileView({ customerId }: ContactProfileViewProps) {
                 )}
               </div>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {allCustomerTags.map((tag) => {
-                  const active = customerTags.some((t) => t.id === tag.id);
-                  return (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      onClick={() => handleToggleTag(tag.id)}
-                      className={`
-                        inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors
-                        ${
-                          active
-                            ? 'bg-gray-900 text-white border-gray-900'
-                            : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }
-                      `}
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: tag.color ?? '#6B7280' }}
-                      />
-                      {tag.name}
-                    </button>
-                  );
-                })}
-              </div>
+              <>
+                {/* Assigned Tags Section */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Assigned to this contact
+                  </h4>
+                  {customerTags.length === 0 ? (
+                    <p className="text-sm text-gray-400 italic">No tags assigned yet.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {customerTags.map((tag) => (
+                        <button
+                          key={tag.id}
+                          type="button"
+                          onClick={() => handleToggleTag(tag.id)}
+                          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium bg-gray-900 text-white border border-gray-900 hover:bg-gray-800 transition-colors"
+                          title="Click to remove tag"
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: tag.color ?? '#6B7280' }}
+                          />
+                          {tag.name}
+                          <svg className="w-3.5 h-3.5 text-gray-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Available Tags Section */}
+                {allCustomerTags.some((tag) => !customerTags.some((t) => t.id === tag.id)) && (
+                  <div className="space-y-2 pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Available to assign (click to assign)
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {allCustomerTags
+                        .filter((tag) => !customerTags.some((t) => t.id === tag.id))
+                        .map((tag) => (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => handleToggleTag(tag.id)}
+                            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                          >
+                            <span
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: tag.color ?? '#6B7280' }}
+                            />
+                            {tag.name}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
