@@ -44,6 +44,11 @@ export function StaffCard({ staff, onClick }: StaffCardProps) {
             >
               {role}
             </span>
+            {staff.ratingCount > 0 && (
+              <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium flex items-center gap-0.5">
+                ⭐ {(staff.ratingTotal / staff.ratingCount).toFixed(1)}/10
+              </span>
+            )}
             {(stats?.open ?? 0) > 0 && (
               <span className="text-[10px] text-emerald-600 font-medium">{stats?.open} open</span>
             )}

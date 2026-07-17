@@ -220,14 +220,29 @@ export class ConversationsService {
     });
 
     if (note && note.trim()) {
-      await this.prisma.conversationNote.create({
+      const createdNote = await this.prisma.conversationNote.create({
         data: {
           orgId: currentUser.orgId,
           conversationId: conversation.id,
           authorId: currentUser.userId,
           content: note,
         },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
       });
+      this.socketGateway.emitToConversation(
+        conversation.id,
+        'new_note',
+        createdNote,
+        currentUser.orgId,
+      );
     }
 
     await this.prisma.auditLog.create({
@@ -706,6 +721,13 @@ export class ConversationsService {
         targetType: 'conversation',
       },
     });
+
+    this.socketGateway.emitToConversation(
+      conversation.id,
+      'new_note',
+      note,
+      currentUser.orgId,
+    );
 
     return note;
   }

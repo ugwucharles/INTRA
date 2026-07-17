@@ -40,6 +40,7 @@ interface AgentStat {
   pending: number;
   closed: number;
   resolutionRate: number;
+  avgRating: string;
 }
 
 interface ChannelStat {
@@ -131,7 +132,9 @@ export default function AnalyticsPage() {
     const open = conversations.filter((c) => c.status === 'OPEN').length;
     const pending = conversations.filter((c) => c.status === 'PENDING').length;
     const closed = conversations.filter((c) => c.status === 'CLOSED').length;
-    const resolutionRate = total > 0 ? Math.round((closed / total) * 100) : 0;
+    const resolved = conversations.filter((c) => c.status === 'RESOLVED').length;
+    const resolutionRate = total > 0 ? Math.round(((closed + resolved) / total) * 100) : 0;
+    const escalated = conversations.filter((c) => !c.assignedTo && (c.status === 'OPEN' || c.status === 'PENDING')).length;
 
     const respondedConvs = conversations.filter((c) => c.firstResponseTime != null);
     let formattedResponseTime = 'N/A';
@@ -144,7 +147,7 @@ export default function AnalyticsPage() {
       else formattedResponseTime = `${Math.floor(avg / 3600)}h ${Math.floor((avg % 3600) / 60)}m`;
     }
 
-    return { total, open, pending, closed, resolutionRate, formattedResponseTime };
+    return { total, open, pending, closed, resolved, escalated, resolutionRate, formattedResponseTime };
   }, [conversations]);
 
   const volumeData: DayVolume[] = useMemo(() => {
@@ -178,7 +181,10 @@ export default function AnalyticsPage() {
     return staff
       .map((agent) => {
         const assigned = conversations.filter((c) => c.assignedTo === agent.id);
-        const closed = assigned.filter((c) => c.status === 'CLOSED').length;
+        const closed = assigned.filter((c) => c.status === 'CLOSED' || c.status === 'RESOLVED').length;
+        const avgRating = (agent as any).ratingCount > 0
+          ? ((agent as any).ratingTotal / (agent as any).ratingCount).toFixed(1)
+          : '—';
         return {
           agent,
           total: assigned.length,
@@ -186,6 +192,7 @@ export default function AnalyticsPage() {
           pending: assigned.filter((c) => c.status === 'PENDING').length,
           closed,
           resolutionRate: assigned.length > 0 ? Math.round((closed / assigned.length) * 100) : 0,
+          avgRating,
         };
       })
       .sort((a, b) => b.total - a.total);
@@ -249,7 +256,7 @@ export default function AnalyticsPage() {
       )}
 
       <div className="space-y-4">
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
           <KpiCard label="Total" value={kpis.total} />
           <KpiCard
             label="Open"
@@ -264,7 +271,8 @@ export default function AnalyticsPage() {
             sub={kpis.total ? `${Math.round((kpis.pending / kpis.total) * 100)}%` : undefined}
           />
           <KpiCard label="Closed" value={kpis.closed} accent="gray" />
-          <KpiCard label="Resolution" value={`${kpis.resolutionRate}%`} accent="gray" sub="Closed ÷ total" />
+          <KpiCard label="Resolved" value={kpis.resolved} accent="gray" />
+          <KpiCard label="Resolved %" value={`${kpis.resolutionRate}%`} accent="emerald" sub="(Closed + Resolved) ÷ Total" />
           <KpiCard label="Avg response" value={kpis.formattedResponseTime} accent="blue" sub="First reply" />
         </div>
 
@@ -335,6 +343,34 @@ export default function AnalyticsPage() {
           </Panel>
         </div>
 
+        {kpis.escalated > 0 && (
+          <Panel title="Escalated conversations" description="Open or pending conversations with no assigned agent">
+            <ul className="divide-y divide-gray-50">
+              {conversations
+                .filter((c) => !c.assignedTo && (c.status === 'OPEN' || c.status === 'PENDING'))
+                .slice(0, 10)
+                .map((c) => (
+                  <li key={c.id} className="py-2.5 first:pt-0 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {(c as any).customer?.name || 'Unknown customer'}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate mt-0.5">
+                        {new Date(c.createdAt).toLocaleDateString()} · {c.status}
+                      </p>
+                    </div>
+                    <span className="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-100">
+                      Unassigned
+                    </span>
+                  </li>
+                ))}
+            </ul>
+            {kpis.escalated > 10 && (
+              <p className="text-xs text-gray-400 mt-3">…and {kpis.escalated - 10} more</p>
+            )}
+          </Panel>
+        )}
+
         <Panel
           title="Team performance"
           description="All-time stats per agent"
@@ -378,12 +414,16 @@ export default function AnalyticsPage() {
                         <p className="font-semibold text-emerald-600">{stat.open}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Done</p>
+                        <p className="text-gray-400">Resolved</p>
                         <p className="font-semibold text-gray-500">{stat.closed}</p>
                       </div>
                       <div className="min-w-[40px]">
-                        <p className="text-gray-400">Rate</p>
+                        <p className="text-gray-400">Resolution %</p>
                         <p className="font-semibold text-gray-900">{stat.resolutionRate}%</p>
+                      </div>
+                      <div className="min-w-[40px]">
+                        <p className="text-gray-400">Avg Rating</p>
+                        <p className="font-semibold text-amber-600">{stat.avgRating}</p>
                       </div>
                     </div>
                   </div>

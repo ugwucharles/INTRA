@@ -24,7 +24,7 @@ export default function ConversationDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   const canLoadStaff = !!user; // both admins and agents can see staff list for @-mentions
   const conversationId = params.id as string;
   const { socket } = useSocket();
@@ -114,11 +114,22 @@ export default function ConversationDetailPage() {
       });
       loadConversation(); // Refresh conversation stats/status
     };
+
+    const noteEventName = `new_note_${conversationId}`;
+    const handleNewNote = (note: any) => {
+      console.log('RECEIVED new_note via socket:', note);
+      setConversationNotes((prev) => {
+        if (prev.some(n => n.id === note.id)) return prev;
+        return [...prev, note];
+      });
+    };
  
     socket.on(eventName, handleNewMessage);
+    socket.on(noteEventName, handleNewNote);
  
     return () => {
       socket.off(eventName, handleNewMessage);
+      socket.off(noteEventName, handleNewNote);
     };
   }, [socket, conversationId]);
 
@@ -269,9 +280,19 @@ export default function ConversationDetailPage() {
 
     if (isNoteMode) {
       if (!noteDraft.trim() || savingNote) return;
-      await handleSaveNote(noteDraft.trim());
-      setIsNoteMode(false);
-      setNoteDraft('');
+      try {
+        setSavingNote(true);
+        const created = await api.conversations.createNote(conversationId, {
+          content: noteDraft.trim(),
+        });
+        setConversationNotes((prev) => [...prev, created]);
+        setIsNoteMode(false);
+        setNoteDraft('');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to add private note');
+      } finally {
+        setSavingNote(false);
+      }
       return;
     }
 
@@ -501,7 +522,23 @@ export default function ConversationDetailPage() {
   const canSendMessages =
     !isInactiveConversation &&
     (isAssigned ? isCurrentAssignee : isAdmin);
-  const allMessages = [...historicalMessages, ...messages];
+  const mappedMessages = messages.map((m) => ({ ...m, isNote: false }));
+  const mappedHistorical = historicalMessages.map((m) => ({ ...m, isNote: false }));
+  const mappedNotes = conversationNotes.map((n) => ({
+    id: n.id,
+    orgId: n.orgId,
+    conversationId: n.conversationId,
+    senderType: 'STAFF' as const,
+    senderId: n.authorId,
+    content: n.content,
+    createdAt: n.createdAt,
+    isNote: true,
+    authorName: n.author?.name || 'Agent',
+  }));
+
+  const allMessages = [...mappedHistorical, ...mappedMessages, ...mappedNotes].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
   const assignedAgentName =
     (conversation.assignedTo && staff.find((s) => s.id === conversation.assignedTo)?.name) ||
     (conversation.assignedTo ? 'another agent' : null);

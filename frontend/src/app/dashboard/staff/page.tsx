@@ -255,6 +255,11 @@ export default function StaffPage() {
                       >
                         {member.role}
                       </span>
+                      {member.ratingCount > 0 && (
+                        <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">
+                          ⭐ {(member.ratingTotal / member.ratingCount).toFixed(1)}/10
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-gray-500 truncate mt-0.5">{member.email}</p>
                   </div>
