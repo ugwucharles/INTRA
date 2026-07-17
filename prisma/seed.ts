@@ -159,15 +159,6 @@ async function main() {
     },
   });
 
-  // Customer tags
-  await prisma.customerTag.create({
-    data: {
-      orgId: org.id,
-      customerId: instaCustomer.id,
-      tagId: vipCustomerTag.id,
-    },
-  });
-
   // 7) Conversations & messages
   const instaConversation = await prisma.conversation.create({
     data: {
@@ -193,19 +184,6 @@ async function main() {
             externalId: 'msg-insta-2',
           },
         ],
-      },
-      tags: {
-        create: [
-          {
-            orgId: org.id,
-            tagId: urgentTag.id,
-          },
-          {
-            orgId: org.id,
-            tagId: salesLeadTag.id,
-          },
-        ],
-      },
     },
   });
 
@@ -233,15 +211,6 @@ async function main() {
             externalId: 'msg-fb-2',
           },
         ],
-      },
-      tags: {
-        create: [
-          {
-            orgId: org.id,
-            tagId: urgentTag.id,
-          },
-        ],
-      },
     },
   });
 
