@@ -435,6 +435,7 @@ export class MetaService {
       pageId: string | null;
     },
     text: string,
+    saveAsAutoReply = false,
   ): Promise<void> {
     if (!customer.source || !customer.externalId) {
       throw new Error(
@@ -450,6 +451,7 @@ export class MetaService {
         customer.externalId,
         text,
       );
+      if (saveAsAutoReply) await this.saveAutoReplyMessage(orgId, conversationId, text);
       return;
     }
 
@@ -502,11 +504,30 @@ export class MetaService {
         this.logger.log(
           `Sent Meta message for org ${orgId}, customer ${customer.id}, conversation ${conversationId}`,
         );
+        if (saveAsAutoReply) await this.saveAutoReplyMessage(orgId, conversationId, text);
       }
     } catch (err) {
       this.logger.error('Error while sending Meta message', err as Error);
       throw err;
     }
+  }
+
+  private async saveAutoReplyMessage(orgId: string, conversationId: string, text: string) {
+    const message = await this.prisma.message.create({
+      data: {
+        orgId,
+        conversationId,
+        senderType: SenderType.STAFF,
+        senderId: null,
+        content: text,
+        status: MessageStatus.SENT,
+      },
+    });
+    this.socketGateway.emitToOrg(orgId, 'conversation_updated', {
+      conversationId,
+      lastMessage: text,
+    });
+    this.socketGateway.emitToConversation(conversationId, 'new_message', message, orgId);
   }
 
   /**
@@ -1107,6 +1128,7 @@ export class MetaService {
           conversation.id,
           customer,
           replyText,
+          true,
         );
       }
     } catch (err) {
@@ -1147,6 +1169,7 @@ export class MetaService {
             conversation.id,
             customer,
             menuText,
+            true,
           );
         }
       }
@@ -1162,6 +1185,7 @@ export class MetaService {
             conversation.id,
             customer,
             reply.message,
+            true,
           );
         }
       }
@@ -1178,6 +1202,7 @@ export class MetaService {
             conversation.id,
             customer,
             reply.message,
+            true,
           );
         }
       }

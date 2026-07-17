@@ -50,12 +50,15 @@ export function MessageThread({
         ) : (
           messages.map((message, index) => {
             const isStaff = message.senderType === 'STAFF';
-            const senderName = isStaff
-              ? staff.find((s) => s.id === message.senderId)?.name || currentUserName || 'You'
-              : conversation.customer?.name || 'Customer';
+            const isBot = isStaff && !message.senderId;
+            const senderName = isBot
+              ? 'Automatic Reply'
+              : isStaff
+                ? staff.find((s) => s.id === message.senderId)?.name || currentUserName || 'You'
+                : conversation.customer?.name || 'Customer';
 
             const prevMessage = index > 0 ? messages[index - 1] : null;
-            const sameSender = prevMessage?.senderType === message.senderType;
+            const sameSender = prevMessage?.senderType === message.senderType && (prevMessage?.senderId === message.senderId);
             const showHeader = !sameSender;
 
             return (
@@ -65,10 +68,16 @@ export function MessageThread({
               >
                 {showHeader ? (
                   <div className="flex-shrink-0 w-7">
-                    {isStaff ? (
+                    {isBot ? (
+                      <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
+                        <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    ) : isStaff ? (
                       <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center">
                         <span className="text-[10px] font-semibold text-white">
-                          {(currentUserName || 'S').charAt(0)}
+                          {(senderName || 'S').charAt(0)}
                         </span>
                       </div>
                     ) : (
@@ -89,6 +98,11 @@ export function MessageThread({
                   {showHeader && (
                     <div className={`flex items-center gap-1.5 mb-1 px-1 ${isStaff ? 'flex-row-reverse' : ''}`}>
                       <span className="text-[11px] font-medium text-gray-500">{senderName}</span>
+                      {isBot && (
+                        <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200 rounded uppercase tracking-wider">
+                          bot
+                        </span>
+                      )}
                       <span className="text-[11px] text-gray-300">
                         {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
