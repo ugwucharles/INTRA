@@ -71,7 +71,7 @@ export default function ConversationDetailPage() {
 
   const [syncingProfile, setSyncingProfile] = useState(false);
   const [showCustomerPanel, setShowCustomerPanel] = useState(false);
-  const [panelInitialTab, setPanelInitialTab] = useState<'overview' | 'notes' | 'activity' | 'insights'>('overview');
+  const [panelInitialTab, setPanelInitialTab] = useState<'overview' | 'notes' | 'activity'>('overview');
 
   useEffect(() => {
     if (conversationId) {
