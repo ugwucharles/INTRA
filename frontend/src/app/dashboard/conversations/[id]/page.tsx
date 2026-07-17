@@ -33,8 +33,6 @@ export default function ConversationDetailPage() {
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [historicalMessages, setHistoricalMessages] = useState<Message[]>([]);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -165,26 +163,6 @@ export default function ConversationDetailPage() {
         } as Conversation & { customer?: Customer };
         setConversation(enrichedConv);
 
-        // Load historic messages from previous conversations for this customer once
-        if (!historyLoaded) {
-          const previousConversations = conversationsData.filter(
-            (c) =>
-              c.customerId === conv.customerId &&
-              c.id !== conversationId &&
-              new Date(c.createdAt) < new Date(conv.createdAt),
-          );
-
-          if (previousConversations.length > 0) {
-            const allPrevMessagesArrays = await Promise.all(
-              previousConversations.map((c) => api.messages.list(c.id)),
-            );
-            const combined = allPrevMessagesArrays.flat().sort((a, b) => {
-              return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            });
-            setHistoricalMessages(combined);
-          }
-          setHistoryLoaded(true);
-        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load conversation');
@@ -523,7 +501,6 @@ export default function ConversationDetailPage() {
     !isInactiveConversation &&
     (isAssigned ? isCurrentAssignee : isAdmin);
   const mappedMessages = messages.map((m) => ({ ...m, isNote: false }));
-  const mappedHistorical = historicalMessages.map((m) => ({ ...m, isNote: false }));
   const mappedNotes = conversationNotes.map((n) => ({
     id: n.id,
     orgId: n.orgId,
@@ -536,7 +513,7 @@ export default function ConversationDetailPage() {
     authorName: n.author?.name || 'Agent',
   }));
 
-  const allMessages = [...mappedHistorical, ...mappedMessages, ...mappedNotes].sort(
+  const allMessages = [...mappedMessages, ...mappedNotes].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
   const assignedAgentName =
