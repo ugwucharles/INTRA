@@ -1,0 +1,26 @@
+name: Terminal MCP
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: terminal
+    command: npx
+    args:
+      - -y
+      - "mcp-server-terminal"
+      # - "@modelcontextprotocol/server-filesystem"
+      # - "C:/Users/chief/Desktop/INTRA"
+
+// src/frontend/next.config.js
+
+module.exports = {
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      "stream": require.resolve("stream-browserify"),
+    };
+    return config;
+  },
++  serverRuntimeConfig: {
++    port: 3001, // Change this to an available port
++  }
+};

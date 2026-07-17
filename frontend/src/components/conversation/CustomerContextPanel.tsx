@@ -20,7 +20,7 @@ import {
   formatStatus,
 } from './channelUtils';
 
-type PanelTab = 'overview' | 'notes' | 'activity' | 'insights';
+type PanelTab = 'overview' | 'notes' | 'activity';
 
 interface CustomerContextPanelProps {
   isOpen: boolean;
@@ -61,7 +61,6 @@ const TABS: { id: PanelTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'notes', label: 'Notes' },
   { id: 'activity', label: 'Activity' },
-  { id: 'insights', label: 'AI Insights' },
 ];
 
 export function CustomerContextPanel({
@@ -525,62 +524,8 @@ export function CustomerContextPanel({
             </div>
           )}
 
-          {activeTab === 'insights' && (
-            <div className="space-y-4">
-              <div className="rounded-xl bg-gray-50 border border-gray-100 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                  <h3 className="text-sm font-semibold text-gray-900">AI Insights</h3>
-                </div>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  AI-powered conversation analysis will appear here — including sentiment, suggested replies, and conversation summaries.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <InsightCard
-                  title="Sentiment"
-                  value={messages.length > 0 ? 'Neutral' : '—'}
-                  description="Based on recent messages"
-                />
-                <InsightCard
-                  title="Suggested reply"
-                  value="—"
-                  description="AI-generated response suggestions"
-                  muted
-                />
-                <InsightCard
-                  title="Summary"
-                  value={messages.length > 0 ? `${messages.length} messages` : '—'}
-                  description="Conversation overview"
-                />
-              </div>
-            </div>
-          )}
         </div>
       </aside>
     </>
-  );
-}
-
-function InsightCard({
-  title,
-  value,
-  description,
-  muted,
-}: {
-  title: string;
-  value: string;
-  description: string;
-  muted?: boolean;
-}) {
-  return (
-    <div className={`rounded-xl border px-4 py-3 ${muted ? 'border-gray-100 bg-gray-50/50' : 'border-gray-100 bg-white'}`}>
-      <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{title}</p>
-      <p className={`text-sm font-medium mt-0.5 ${muted ? 'text-gray-400' : 'text-gray-900'}`}>{value}</p>
-      <p className="text-[11px] text-gray-400 mt-0.5">{description}</p>
-    </div>
   );
 }
