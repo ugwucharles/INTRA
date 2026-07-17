@@ -1081,12 +1081,15 @@ export class MetaService {
         !conversation.departmentId &&
         !hadRoutingQuestionAlreadySent
       ) {
-        const questionReplies = await this.autoReplyService.getReplies(
-          orgId,
-          AutoReplyTrigger.DEPARTMENT_SELECTION,
-        );
-        if (questionReplies.length > 0) {
-          repliesToSend.push(...questionReplies.map((r) => r.message));
+        const departments = await this.prisma.department.findMany({
+          where: { orgId, isActive: true },
+          orderBy: { createdAt: 'asc' },
+        });
+        if (departments.length > 0) {
+          const menuText =
+            'Please select a department by replying with the corresponding number:\n' +
+            departments.map((d, i) => `${i + 1}. ${d.name}`).join('\n');
+          repliesToSend.push(menuText);
 
           if (!conversation.routingQuestionSent) {
             await this.prisma.conversation.updateMany({
@@ -1131,11 +1134,29 @@ export class MetaService {
         reaskOnInvalidSelection &&
         allowDepartmentMenu
       ) {
-        const questionReplies = await this.autoReplyService.getReplies(
+        const departments = await this.prisma.department.findMany({
+          where: { orgId, isActive: true },
+          orderBy: { createdAt: 'asc' },
+        });
+        if (departments.length > 0) {
+          const menuText =
+            'Invalid selection. Please select a department by replying with the corresponding number:\n' +
+            departments.map((d, i) => `${i + 1}. ${d.name}`).join('\n');
+          await this.sendOutboundTextMessage(
+            orgId,
+            conversation.id,
+            customer,
+            menuText,
+          );
+        }
+      }
+
+      if (routingOutcome?.departmentId) {
+        const selectionReplies = await this.autoReplyService.getReplies(
           orgId,
           AutoReplyTrigger.DEPARTMENT_SELECTION,
         );
-        for (const reply of questionReplies) {
+        for (const reply of selectionReplies) {
           await this.sendOutboundTextMessage(
             orgId,
             conversation.id,
