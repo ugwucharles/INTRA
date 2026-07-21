@@ -22,16 +22,8 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  // Keep tab text minimal so favicon/logo is visually dominant.
-  title: " ",
+  title: "INTRA",
   description: "Modern social CRM platform for managing customer conversations",
-  icons: {
-    icon: [
-      { url: '/intra.logo.1.png', type: 'image/png' },
-    ],
-    shortcut: '/intra.logo.1.png',
-    apple: '/intra.logo.1.png',
-  },
 };
 
 export const viewport: import("next").Viewport = {
