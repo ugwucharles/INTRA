@@ -9,6 +9,7 @@ import { DashboardLayout } from '@/components/Layout/DashboardLayout';
 const tabs = [
   { name: 'Rules', href: '/dashboard/routing/rules' },
   { name: 'Auto replies', href: '/dashboard/routing/auto-replies' },
+  { name: 'Saved replies', href: '/dashboard/routing/saved-replies' },
   { name: 'Availability', href: '/dashboard/routing/business-availability' },
   { name: 'Departments', href: '/dashboard/routing/departments' },
   { name: 'Tags', href: '/dashboard/routing/tags' },

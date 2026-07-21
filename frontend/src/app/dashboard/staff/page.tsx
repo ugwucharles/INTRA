@@ -144,7 +144,9 @@ export default function StaffPage() {
 
   if (!isAdmin) {
     return shell(
-      <DashboardPageShell title="Staff" description="Only admins can manage team members." />,
+      <DashboardPageShell title="Staff" description="Only admins can manage team members.">
+        <div />
+      </DashboardPageShell>,
     );
   }
 

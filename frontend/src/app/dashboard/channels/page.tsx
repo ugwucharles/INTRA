@@ -224,7 +224,9 @@ export default function ChannelsPage() {
 
   if (!isAdmin) {
     return shell(
-      <DashboardPageShell title="Channels" description="Only admins can manage channel connections." />,
+      <DashboardPageShell title="Channels" description="Only admins can manage channel connections.">
+        <div />
+      </DashboardPageShell>,
     );
   }
 

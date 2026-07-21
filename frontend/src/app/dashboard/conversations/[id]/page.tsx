@@ -24,7 +24,7 @@ export default function ConversationDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+  const isAdmin = user?.role === 'ADMIN';
   const canLoadStaff = !!user; // both admins and agents can see staff list for @-mentions
   const conversationId = params.id as string;
   const { socket } = useSocket();
