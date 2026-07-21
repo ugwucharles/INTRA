@@ -279,4 +279,60 @@ export class CustomersService {
 
     return this.getCustomerTags(currentUser, customer.id);
   }
+
+  async deleteCustomer(currentUser: JwtPayload, customerId: string) {
+    const customer = await this.prisma.customer.findFirst({
+      where: { id: customerId, orgId: currentUser.orgId },
+      include: { conversations: { select: { id: true } } },
+    });
+
+    if (!customer) {
+      throw new NotFoundException('Customer not found in this organization');
+    }
+
+    const conversationIds = customer.conversations.map((c) => c.id);
+
+    await this.prisma.$transaction([
+      // Delete all messages in the customer's conversations
+      this.prisma.message.deleteMany({
+        where: { conversationId: { in: conversationIds }, orgId: currentUser.orgId },
+      }),
+      // Delete all conversation notes
+      this.prisma.conversationNote.deleteMany({
+        where: { conversationId: { in: conversationIds }, orgId: currentUser.orgId },
+      }),
+      // Delete all conversation tags
+      this.prisma.conversationTag.deleteMany({
+        where: { conversationId: { in: conversationIds }, orgId: currentUser.orgId },
+      }),
+      // Delete the conversations themselves
+      this.prisma.conversation.deleteMany({
+        where: { customerId, orgId: currentUser.orgId },
+      }),
+      // Delete customer tags
+      this.prisma.customerTag.deleteMany({
+        where: { customerId, orgId: currentUser.orgId },
+      }),
+      // Delete customer notes
+      this.prisma.customerNote.deleteMany({
+        where: { customerId, orgId: currentUser.orgId },
+      }),
+      // Finally delete the customer
+      this.prisma.customer.deleteMany({
+        where: { id: customerId, orgId: currentUser.orgId },
+      }),
+    ]);
+
+    await this.prisma.auditLog.create({
+      data: {
+        orgId: currentUser.orgId,
+        userId: currentUser.userId,
+        action: 'CUSTOMER_DELETED',
+        targetId: customerId,
+        targetType: 'customer',
+      },
+    });
+
+    return { success: true };
+  }
 }

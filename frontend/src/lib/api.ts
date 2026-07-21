@@ -353,6 +353,10 @@ export const api = {
       request<Tag[]>(`/customers/${id}/tags/${tagId}`, {
         method: 'DELETE',
       }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/customers/${id}`, {
+        method: 'DELETE',
+      }),
   },
   staff: {
     list: () => request<User[]>('/staff'),

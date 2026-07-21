@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -12,6 +13,9 @@ import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
 
@@ -95,5 +99,15 @@ export class CustomersController {
     @Param('tagId') tagId: string,
   ) {
     return this.customersService.removeCustomerTag(currentUser, id, tagId);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async deleteCustomer(
+    @CurrentUser() currentUser: JwtPayload,
+    @Param('id') id: string,
+  ) {
+    return this.customersService.deleteCustomer(currentUser, id);
   }
 }

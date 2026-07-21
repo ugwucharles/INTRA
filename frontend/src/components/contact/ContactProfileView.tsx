@@ -127,12 +127,12 @@ export function ContactProfileView({ customerId }: ContactProfileViewProps) {
   };
 
   const handleDeleteData = async () => {
-    if (!customer || !confirm('Delete all data for this contact?')) return;
+    if (!customer || !confirm('Delete all data for this contact? This cannot be undone.')) return;
     try {
-      await api.meta.deleteData({ customerId: customer.id });
+      await api.customers.delete(customer.id);
       router.push('/dashboard/customers');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete data');
+      setError(err instanceof Error ? err.message : 'Failed to delete contact');
     }
   };
 
