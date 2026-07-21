@@ -265,6 +265,7 @@ export const api = {
   },
   conversations: {
     list: () => request<Conversation[]>('/conversations'),
+    getActiveSibling: (id: string) => request<Conversation | null>(`/conversations/${id}/active-sibling`),
     create: (dto: { customerId: string }) => request<Conversation>('/conversations', {
       method: 'POST',
       body: JSON.stringify(dto),

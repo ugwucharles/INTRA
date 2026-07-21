@@ -87,13 +87,14 @@ export class ConversationsService {
       return this.listConversationsEnriched({ orgId: currentUser.orgId });
     }
 
-    // AGENT sees assigned conversations, plus any conversations they've previously participated in
+    // AGENT sees assigned conversations, unassigned conversations, plus any conversations they've previously participated in
     // (sent a staff message or added an internal note). Participation gives read-only access;
     // message sending is enforced separately in MessagesService.
     return this.listConversationsEnriched({
       orgId: currentUser.orgId,
       OR: [
         { assignedTo: currentUser.userId },
+        { assignedTo: null },
         {
           messages: {
             some: {
@@ -765,5 +766,29 @@ export class ConversationsService {
         where: { id: conversationId, orgId: currentUser.orgId },
       }),
     ]);
+  }
+
+  async getActiveSibling(currentUser: JwtPayload, conversationId: string) {
+    const currentConv = await this.prisma.conversation.findFirst({
+      where: { id: conversationId, orgId: currentUser.orgId },
+      select: { customerId: true },
+    });
+
+    if (!currentConv) return null;
+
+    const activeSibling = await this.prisma.conversation.findFirst({
+      where: {
+        orgId: currentUser.orgId,
+        customerId: currentConv.customerId,
+        id: { not: conversationId },
+        status: { in: [ConversationStatus.OPEN, ConversationStatus.PENDING] },
+      },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        customer: true,
+      },
+    });
+
+    return activeSibling ?? null;
   }
 }

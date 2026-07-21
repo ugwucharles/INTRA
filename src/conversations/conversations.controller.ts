@@ -113,6 +113,14 @@ export class ConversationsController {
     return this.conversationsService.updateStatus(currentUser, id, body.status);
   }
 
+  @Get(':id/active-sibling')
+  async getActiveSibling(
+    @CurrentUser() currentUser: JwtPayload,
+    @Param('id') id: string,
+  ) {
+    return this.conversationsService.getActiveSibling(currentUser, id);
+  }
+
   @Get(':id/tags')
   async getConversationTags(
     @CurrentUser() currentUser: JwtPayload,

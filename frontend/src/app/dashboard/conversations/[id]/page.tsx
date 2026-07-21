@@ -121,13 +121,19 @@ export default function ConversationDetailPage() {
         return [...prev, note];
       });
     };
+
+    const handleOrgUpdate = () => {
+      loadConversation();
+    };
  
     socket.on(eventName, handleNewMessage);
     socket.on(noteEventName, handleNewNote);
+    socket.on('conversation_updated', handleOrgUpdate);
  
     return () => {
       socket.off(eventName, handleNewMessage);
       socket.off(noteEventName, handleNewNote);
+      socket.off('conversation_updated', handleOrgUpdate);
     };
   }, [socket, conversationId]);
 
@@ -153,9 +159,10 @@ export default function ConversationDetailPage() {
 
   const loadConversation = async () => {
     try {
-      const [conversationsData, customersData] = await Promise.all([
+      const [conversationsData, customersData, sibling] = await Promise.all([
         api.conversations.list(),
         api.customers.list(),
+        api.conversations.getActiveSibling(conversationId).catch(() => null),
       ]);
       const conv = conversationsData.find((c: Conversation) => c.id === conversationId);
       if (conv) {
@@ -164,14 +171,11 @@ export default function ConversationDetailPage() {
           customer: customersData.find((c: Customer) => c.id === conv.customerId),
         } as Conversation & { customer?: Customer };
         setConversation(enrichedConv);
-
-        const sibling = conversationsData.find(
-          (c: Conversation) =>
-            c.customerId === conv.customerId &&
-            c.id !== conv.id &&
-            (c.status === 'OPEN' || c.status === 'PENDING')
-        );
-        setActiveSiblingConversation(sibling ?? null);
+      }
+      if (sibling && sibling.id !== conversationId) {
+        setActiveSiblingConversation(sibling);
+      } else {
+        setActiveSiblingConversation(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load conversation');
