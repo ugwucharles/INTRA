@@ -135,6 +135,12 @@ export function useConversationInbox() {
       }
 
       return true;
+    }).sort((a, b) => {
+      const isAActive = a.status === 'OPEN' || a.status === 'PENDING';
+      const isBActive = b.status === 'OPEN' || b.status === 'PENDING';
+      if (isAActive && !isBActive) return -1;
+      if (!isAActive && isBActive) return 1;
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
   }, [
     enrichedConversations,

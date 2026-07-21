@@ -23,6 +23,8 @@ export interface RoutingOutcome {
   invalidSelection?: boolean;
 }
 
+import { SocketGateway } from '../socket/socket.gateway';
+
 @Injectable()
 export class RoutingService {
   private readonly logger = new Logger(RoutingService.name);
@@ -31,6 +33,7 @@ export class RoutingService {
     private readonly prisma: PrismaService,
     private readonly routingSettingsService: RoutingSettingsService,
     private readonly plans: PlansService,
+    private readonly socketGateway: SocketGateway,
   ) {}
 
   /**
@@ -220,6 +223,10 @@ export class RoutingService {
     await this.prisma.conversation.updateMany({
       where: { id: conversationId, orgId },
       data: { assignedTo: assigneeId },
+    });
+
+    this.socketGateway.emitToOrg(orgId, 'conversation_updated', {
+      conversationId,
     });
 
     const noAgentAvailable = !assigneeId;

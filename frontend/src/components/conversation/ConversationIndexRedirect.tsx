@@ -21,7 +21,10 @@ export function ConversationIndexRedirect() {
       .then((conversations) => {
         if (cancelled || redirected.current || conversations.length === 0) return;
         redirected.current = true;
-        router.replace(`/dashboard/conversations/${conversations[0].id}`);
+        const activeConv =
+          conversations.find((c) => c.status === 'OPEN' || c.status === 'PENDING') ??
+          conversations[0];
+        router.replace(`/dashboard/conversations/${activeConv.id}`);
       })
       .catch(() => {});
 

@@ -149,6 +149,8 @@ export default function ConversationDetailPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: force ? 'auto' : 'smooth' });
   };
 
+  const [activeSiblingConversation, setActiveSiblingConversation] = useState<Conversation | null>(null);
+
   const loadConversation = async () => {
     try {
       const [conversationsData, customersData] = await Promise.all([
@@ -163,6 +165,13 @@ export default function ConversationDetailPage() {
         } as Conversation & { customer?: Customer };
         setConversation(enrichedConv);
 
+        const sibling = conversationsData.find(
+          (c: Conversation) =>
+            c.customerId === conv.customerId &&
+            c.id !== conv.id &&
+            (c.status === 'OPEN' || c.status === 'PENDING')
+        );
+        setActiveSiblingConversation(sibling ?? null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load conversation');
@@ -531,6 +540,24 @@ export default function ConversationDetailPage() {
         conversation={conversation}
         onOpenCustomerPanel={() => openCustomerPanel('overview')}
       />
+
+      {activeSiblingConversation && (
+        <div className="bg-blue-600 text-white px-4 py-2.5 text-xs flex items-center justify-between shadow-md flex-shrink-0 z-10">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold px-2 py-0.5 rounded bg-white/20">Active Thread</span>
+            <span>
+              {conversation.customer?.name || 'This customer'} has a new active open conversation!
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push(`/dashboard/conversations/${activeSiblingConversation.id}`)}
+            className="bg-white text-blue-700 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-blue-50 transition-all shadow-sm"
+          >
+            Switch to Open Thread →
+          </button>
+        </div>
+      )}
 
             <MessageThread
               messages={allMessages}

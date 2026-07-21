@@ -740,13 +740,29 @@ export class MetaService {
 
       // If this conversation is awaiting a customer rating, process it now
       if (isAwaitingRating) {
-        await this.processRatingReply(
+        const isRating = await this.processRatingReply(
           orgId,
           conversation.id,
           conversation.resolvedBy,
           text,
         );
-        continue;
+        if (isRating) {
+          continue;
+        }
+
+        // Customer sent non-rating text! Create a new OPEN conversation for them and attach message to it
+        const newConv = await this.prisma.conversation.create({
+          data: { orgId, customerId: customer.id },
+        });
+
+        if (message) {
+          await this.prisma.message.updateMany({
+            where: { id: message.id, orgId },
+            data: { conversationId: newConv.id },
+          });
+        }
+
+        conversation = newConv;
       }
 
       // Load routing settings
@@ -1047,13 +1063,29 @@ export class MetaService {
 
     // If this conversation is awaiting a customer rating, process it and skip auto-replies
     if (isAwaitingRating) {
-      await this.processRatingReply(
+      const isRating = await this.processRatingReply(
         orgId,
         conversation.id,
         conversation.resolvedBy,
         text,
       );
-      return;
+      if (isRating) {
+        return;
+      }
+
+      // Customer sent non-rating text! Create a new OPEN conversation for them and attach message to it
+      const newConv = await this.prisma.conversation.create({
+        data: { orgId, customerId: customer.id },
+      });
+
+      if (message) {
+        await this.prisma.message.updateMany({
+          where: { id: message.id, orgId },
+          data: { conversationId: newConv.id },
+        });
+      }
+
+      conversation = newConv;
     }
 
     // Load routing settings once
@@ -1216,7 +1248,7 @@ export class MetaService {
     conversationId: string,
     resolvedBy: string | null,
     text: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const { staffRating } = await this.plans.getCapabilitiesForOrg(orgId);
     const trimmed = text.trim();
     const rating = Number.parseInt(trimmed, 10);
@@ -1225,7 +1257,11 @@ export class MetaService {
       this.logger.log(
         `Ignoring non-rating reply for conversation ${conversationId}: "${text}"`,
       );
-      return;
+      await this.prisma.conversation.updateMany({
+        where: { id: conversationId, orgId },
+        data: { awaitingRating: false },
+      });
+      return false;
     }
 
     await this.prisma.$transaction(async (tx) => {
@@ -1258,6 +1294,7 @@ export class MetaService {
     this.logger.log(
       `Processed rating ${rating} for conversation ${conversationId} (org ${orgId})`,
     );
+    return true;
   }
   private computeIsAfterHours(settings: RoutingSettings): boolean {
     const cfg: any = settings.afterHoursConfig ?? {};
