@@ -19,12 +19,12 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Get()
+  @Roles(Role.ADMIN, Role.AGENT)
   async listTags(
     @CurrentUser() currentUser: JwtPayload,
     @Query('type') type?: string,
@@ -33,6 +33,7 @@ export class TagsController {
   }
 
   @Post()
+  @Roles(Role.ADMIN)
   async createTag(
     @CurrentUser() currentUser: JwtPayload,
     @Body() dto: CreateTagDto,
@@ -41,6 +42,7 @@ export class TagsController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   async updateTag(
     @CurrentUser() currentUser: JwtPayload,
     @Param('id') id: string,
@@ -50,6 +52,7 @@ export class TagsController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
   async deleteTag(
     @CurrentUser() currentUser: JwtPayload,
     @Param('id') id: string,
