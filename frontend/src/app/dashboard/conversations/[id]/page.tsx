@@ -159,16 +159,18 @@ export default function ConversationDetailPage() {
 
   const loadConversation = async () => {
     try {
-      const [conversationsData, customersData, sibling] = await Promise.all([
-        api.conversations.list(),
+      const [conv, customersData, sibling] = await Promise.all([
+        api.conversations.get(conversationId).catch(async () => {
+          const list = await api.conversations.list();
+          return list.find((c) => c.id === conversationId) ?? null;
+        }),
         api.customers.list(),
         api.conversations.getActiveSibling(conversationId).catch(() => null),
       ]);
-      const conv = conversationsData.find((c: Conversation) => c.id === conversationId);
       if (conv) {
         const enrichedConv = {
           ...conv,
-          customer: customersData.find((c: Customer) => c.id === conv.customerId),
+          customer: conv.customer ?? customersData.find((c: Customer) => c.id === conv.customerId),
         } as Conversation & { customer?: Customer };
         setConversation(enrichedConv);
       }

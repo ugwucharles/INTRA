@@ -57,6 +57,38 @@ export class ConversationsService {
     return conversation;
   }
 
+  async getConversationById(currentUser: JwtPayload, conversationId: string) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        orgId: currentUser.orgId,
+      },
+      include: {
+        customer: true,
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            content: true,
+            senderType: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found in this organization');
+    }
+
+    const { messages, ...rest } = conversation;
+    return {
+      ...rest,
+      lastMessage: messages[0] ?? null,
+    };
+  }
+
   private async listConversationsEnriched(where: { orgId: string } & Record<string, unknown>) {
     const rows = await this.prisma.conversation.findMany({
       where,

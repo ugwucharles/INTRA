@@ -37,6 +37,14 @@ export class ConversationsController {
     return this.conversationsService.listConversations(currentUser);
   }
 
+  @Get(':id')
+  async getConversation(
+    @CurrentUser() currentUser: JwtPayload,
+    @Param('id') id: string,
+  ) {
+    return this.conversationsService.getConversationById(currentUser, id);
+  }
+
   @Patch(':id/assign')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
