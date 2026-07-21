@@ -201,11 +201,21 @@ export class MetaService {
           where: { conversationId: { in: conversationIds }, orgId },
         });
 
+        await tx.conversationNote.deleteMany({
+          where: { conversationId: { in: conversationIds }, orgId },
+        });
+
+        await tx.conversationTag.deleteMany({
+          where: { conversationId: { in: conversationIds }, orgId },
+        });
+
         await tx.conversation.deleteMany({
           where: { id: { in: conversationIds }, orgId },
         });
       }
 
+      await tx.customerTag.deleteMany({ where: { customerId: customer.id, orgId } });
+      await tx.customerNote.deleteMany({ where: { customerId: customer.id, orgId } });
       await tx.customer.deleteMany({ where: { id: customer.id, orgId } });
     });
 

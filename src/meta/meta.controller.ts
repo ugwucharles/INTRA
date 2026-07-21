@@ -132,4 +132,14 @@ export class MetaController {
   ) {
     return this.metaService.syncCustomerProfile(currentUser.orgId, customerId);
   }
+
+  // Delete data endpoint for Meta/Contacts
+  @Post('delete-data')
+  @UseGuards(JwtAuthGuard)
+  async deleteData(
+    @CurrentUser() currentUser: JwtPayload,
+    @Body() dto: MetaDeleteDataDto,
+  ) {
+    return this.metaService.deleteCustomerData(currentUser.orgId, dto.customerId);
+  }
 }

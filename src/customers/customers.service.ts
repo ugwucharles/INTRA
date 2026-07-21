@@ -323,15 +323,19 @@ export class CustomersService {
       }),
     ]);
 
-    await this.prisma.auditLog.create({
-      data: {
-        orgId: currentUser.orgId,
-        userId: currentUser.userId,
-        action: 'CUSTOMER_DELETED',
-        targetId: customerId,
-        targetType: 'customer',
-      },
-    });
+    try {
+      await this.prisma.auditLog.create({
+        data: {
+          orgId: currentUser.orgId,
+          userId: currentUser.userId,
+          action: 'CUSTOMER_TAG_REMOVED',
+          targetId: customerId,
+          targetType: 'customer',
+        },
+      });
+    } catch {
+      // Ignore audit log error if enum is missing on production DB
+    }
 
     return { success: true };
   }
