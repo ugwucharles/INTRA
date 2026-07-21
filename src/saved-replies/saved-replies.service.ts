@@ -28,11 +28,18 @@ export class SavedRepliesService {
   async listSavedReplies(
     currentUser: JwtPayload,
     departmentId?: string | null,
+    activeOnly?: boolean,
   ) {
     return this.prisma.savedReply.findMany({
       where: {
         orgId: currentUser.orgId,
-        ...(departmentId !== undefined && { departmentId }),
+        ...(activeOnly && { isActive: true }),
+        ...(departmentId !== undefined && {
+          OR: [
+            { departmentId },
+            { departmentId: null },
+          ],
+        }),
       },
       orderBy: { createdAt: 'asc' },
     });

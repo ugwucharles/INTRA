@@ -475,7 +475,7 @@ export default function ConversationDetailPage() {
   useEffect(() => {
     const loadSavedReplies = async () => {
       try {
-        const replies = await api.savedReplies.list(conversation?.departmentId ?? undefined);
+        const replies = await api.savedReplies.list(conversation?.departmentId ?? undefined, true);
         setSavedReplies(replies);
       } catch {
         // optional, ignore errors

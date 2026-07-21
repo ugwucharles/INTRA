@@ -497,10 +497,13 @@ export const api = {
       }),
   },
   savedReplies: {
-    list: (departmentId?: string) =>
-      request<SavedReply[]>(
-        `/saved-replies${departmentId ? `?departmentId=${encodeURIComponent(departmentId)}` : ''}`,
-      ),
+    list: (departmentId?: string, activeOnly?: boolean) => {
+      const params = new URLSearchParams();
+      if (departmentId) params.append('departmentId', departmentId);
+      if (activeOnly) params.append('activeOnly', 'true');
+      const qs = params.toString();
+      return request<SavedReply[]>(`/saved-replies${qs ? `?${qs}` : ''}`);
+    },
     create: (dto: { name: string; shortcut?: string; body: string; departmentId?: string | null }) =>
       request<SavedReply>('/saved-replies', {
         method: 'POST',

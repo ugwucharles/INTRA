@@ -22,20 +22,23 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
 @Controller('saved-replies')
 export class SavedRepliesController {
   constructor(private readonly savedRepliesService: SavedRepliesService) {}
 
   @Get()
+  @Roles(Role.ADMIN, Role.AGENT)
   async listSavedReplies(
     @CurrentUser() currentUser: JwtPayload,
     @Query('departmentId') departmentId?: string,
+    @Query('activeOnly') activeOnly?: string,
   ) {
-    return this.savedRepliesService.listSavedReplies(currentUser, departmentId);
+    const isActOnly = activeOnly === 'true';
+    return this.savedRepliesService.listSavedReplies(currentUser, departmentId, isActOnly);
   }
 
   @Post()
+  @Roles(Role.ADMIN)
   async createSavedReply(
     @CurrentUser() currentUser: JwtPayload,
     @Body() dto: CreateSavedReplyDto,
@@ -44,6 +47,7 @@ export class SavedRepliesController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   async updateSavedReply(
     @CurrentUser() currentUser: JwtPayload,
     @Param('id') id: string,
@@ -53,6 +57,7 @@ export class SavedRepliesController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
   async deleteSavedReply(
     @CurrentUser() currentUser: JwtPayload,
     @Param('id') id: string,
